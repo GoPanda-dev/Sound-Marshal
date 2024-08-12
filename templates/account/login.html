@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% load socialaccount %}  <!-- Load the socialaccount template tags -->
+
+{% block content %}
+<h2>Login</h2>
+<form method="post" action="{% url 'account_login' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Login</button>
+</form>
+
+<p>Don't have an account? <a href="{% url 'account_signup' %}">Sign up</a></p>
+
+<h3>Or login with:</h3>
+{% if socialaccount_providers %}
+    {% providers_media_js %}
+    {% for provider in socialaccount_providers %}
+        <a href="{% provider_login_url provider.id %}" class="btn">{{ provider.name }}</a><br>
+    {% endfor %}
+{% else %}
+    <p>No social providers configured.</p>
+{% endif %}
+
+{% endblock %}

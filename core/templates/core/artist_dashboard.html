@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Artist Dashboard</h1>
+
+<h2>Your Tracks</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Genre</th>
+            <th>Upload Date</th>
+            <th>Play</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for track in tracks %}
+        <tr>
+            <td>{{ track.title }}</td>
+            <td>{{ track.genre }}</td>
+            <td>{{ track.upload_date }}</td>
+            <td>
+                <a href="#" onclick="playTrack('{{ MEDIA_URL }}{{ track.file }}')">Play {{ track.title }}</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Submissions</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Track</th>
+            <th>Curator</th>
+            <th>Submission Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for submission in submissions %}
+        <tr>
+            <td>{{ submission.track.title }}</td>
+            <td>{{ submission.curator.profile.name }}</td>
+            <td>{{ submission.submission_date }}</td>
+            <td>{{ submission.status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Upload New Track</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Upload Track</button>
+</form>
+{% endblock %}

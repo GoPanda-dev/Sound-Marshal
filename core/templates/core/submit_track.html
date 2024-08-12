@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Submit Track: {{ track.title }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="curator">Select Curator:</label>
+    <select name="curator_id">
+        {% for curator in curators %}
+            <option value="{{ curator.id }}">{{ curator.profile.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="comments">Comments or Instructions:</label>
+    <textarea name="comments" id="comments" rows="5"></textarea>
+
+    <button type="submit">Submit Track</button>
+</form>
+{% endblock %}

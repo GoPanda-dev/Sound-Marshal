@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Curator/Label Dashboard{% endblock %}
+
+{% block content %}
+<h2>Browse Submissions</h2>
+<form method="get">
+    <label for="genre">Filter by Genre:</label>
+    <select name="genre" id="genre">
+        <option value="">All</option>
+        <option value="Pop">Pop</option>
+        <option value="Rock">Rock</option>
+        <option value="Hip-Hop">Hip-Hop</option>
+        <!-- Add more genres as needed -->
+    </select>
+    <button type="submit" class="btn">Filter</button>
+</form>
+
+<ul>
+    {% for submission in submissions %}
+    <li>
+        <strong>{{ submission.track.title }}</strong> by {{ submission.track.artist.username }} (Genre: {{ submission.track.genre }})<br>
+        Submitted on {{ submission.submission_date }} - Status: {{ submission.status }}
+        {% if submission.feedback %}
+        <br><strong>Feedback:</strong> {{ submission.feedback }}
+        {% else %}
+        <form method="post">
+            {% csrf_token %}
+            <textarea name="feedback" placeholder="Provide feedback..."></textarea>
+            <input type="hidden" name="submission_id" value="{{ submission.id }}">
+            <button type="submit" class="btn">Submit Feedback</button>
+        </form>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

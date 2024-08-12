@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Select Your Role{% endblock %}
+
+{% block content %}
+<h2>Select Your Role</h2>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" name="role" value="artist" class="btn">I'm an Artist</button>
+    <button type="submit" name="role" value="curator" class="btn">I'm a Curator/Label</button>
+</form>
+{% endblock %}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sound Marshal{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script>
+        function loadPage(event, url) {
+            event.preventDefault(); // Prevent the default link action
+    
+            // List of URLs or paths to be excluded from AJAX loading
+            const excludedPaths = ['/accounts/login/', '/accounts/signup/', '/accounts/logout/'];
+    
+            // If the URL matches any excluded paths, perform a full page load
+            if (excludedPaths.some(path => url.includes(path))) {
+                window.location.href = url;
+                return;
+            }
+    
+            // Use AJAX to load the page content
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const newContent = document.createElement('div');
+                    newContent.innerHTML = xhr.responseText;
+    
+                    // Check if the response contains a login form, indicating the user is logged out
+                    if (newContent.querySelector('form[action*="login"]')) {
+                        window.location.href = url; // Redirect to the requested URL
+                    } else {
+                        // Extract only the content of the main container from the response
+                        const newMainContent = newContent.querySelector('main.container').innerHTML;
+                        document.querySelector('main.container').innerHTML = newMainContent;
+    
+                        // Update the browser's URL
+                        window.history.pushState({ path: url }, '', url);
+                    }
+                } else if (xhr.status === 302 || xhr.status === 401) {
+                    // Redirect if there's a 302 (redirect) or 401 (unauthorized) status
+                    window.location.href = xhr.getResponseHeader('Location') || url;
+                }
+            };
+    
+            xhr.onerror = function() {
+                window.location.href = url; // Fallback to full page load on error
+            };
+    
+            xhr.send();
+        }
+    
+        window.addEventListener('popstate', function(event) {
+            if (event.state) {
+                loadPage(event, event.state.path);
+            }
+        });
+    
+        function playTrack(url) {
+            const audioPlayer = document.getElementById('audioPlayer');
+            audioPlayer.src = url;
+            audioPlayer.play();
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}" onclick="loadPage(event, '{% url 'home' %}')">Home</a></li>
+                {% if user.is_authenticated %}
+                    <!-- Link to Artist Dashboard if user is an artist -->
+                    {% if user.profile.role == 'artist' %}
+                        <li><a href="{% url 'artist_dashboard' %}" onclick="loadPage(event, '{% url 'artist_dashboard' %}')">Dashboard</a></li>
+                    {% endif %}
+
+                    <!-- Link to Curator/Label Dashboard if user is a curator -->
+                    {% if user.profile.role == 'curator' %}
+                        <li><a href="{% url 'curator_dashboard' %}" onclick="loadPage(event, '{% url 'curator_dashboard' %}')">Dashboard</a></li>
+                    {% endif %}
+
+                    <li><a href="{% url 'profile_detail' pk=user.profile.pk %}" onclick="loadPage(event, '{% url 'profile_detail' pk=user.profile.pk %}')">My Profile</a></li>
+                    <li><a href="{% url 'account_settings' %}" onclick="loadPage(event, '{% url 'account_settings' %}')">Settings</a></li>
+                    <li>
+                        <form method="post" action="{% url 'account_logout' %}">
+                            {% csrf_token %}
+                            <button type="submit">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'account_login' %}" onclick="loadPage(event, '{% url 'account_login' %}')">Login</a></li>
+                    <li><a href="{% url 'account_signup' %}" onclick="loadPage(event, '{% url 'account_signup' %}')">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Persistent Audio Player -->
+    {% if user.is_authenticated %}
+        <div id="audio-player-container" style="position: fixed; bottom: 0; width: 100%; background: #333; padding: 10px; z-index: 1000;">
+            <audio id="audioPlayer" controls></audio>
+        </div>
+    {% endif %}
+
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>

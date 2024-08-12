@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - {{ profile.user.username }}{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h1>{{ profile.name }}</h1>
+    <p><strong>Username:</strong> {{ profile.user.username }}</p>
+    <p><strong>Email:</strong> {{ profile.user.email }}</p>
+    <p><strong>Bio:</strong> {{ profile.bio|linebreaks }}</p>
+    <p><strong>Genre:</strong> {{ profile.genre }}</p>
+
+    {% if profile.social_media_link %}
+    <p><strong>Social Media:</strong> <a href="{{ profile.social_media_link }}" target="_blank">{{ profile.social_media_link }}</a></p>
+    {% endif %}
+
+    <h2>Role: {{ profile.get_role_display }}</h2>
+
+    {% if profile.role == 'artist' %}
+        <h3>Uploaded Tracks</h3>
+        <ul>
+            {% for track in profile.user.track_set.all %}
+                <li>{{ track.title }} ({{ track.genre }}) - Uploaded on {{ track.upload_date }}</li>
+            {% empty %}
+                <li>No tracks uploaded yet.</li>
+            {% endfor %}
+        </ul>
+    {% elif profile.role == 'curator' %}
+        <h3>Submissions Reviewed</h3>
+        <ul>
+            {% for submission in profile.user.curator_submissions.all %}
+                <li>{{ submission.track.title }} by {{ submission.track.artist.username }} - Reviewed on {{ submission.submission_date }}</li>
+            {% empty %}
+                <li>No submissions reviewed yet.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endblock %}
