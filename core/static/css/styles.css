@@ -37,20 +37,21 @@ p {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    padding-bottom: 100px;
 }
 
 /* Responsive Padding */
 @media (min-width: 768px) {
     .container {
-        padding-left: 10%; /* 10% padding on the left for desktop */
-        padding-right: 10%; /* 10% padding on the right for desktop */
+        padding-left: 10%;
+        padding-right: 10%;
     }
 }
 
 @media (max-width: 768px) {
     .container {
-        width: 95%; /* Use 95% width for mobile */
-        padding-left: 2.5%; /* Center padding for mobile */
+        width: 95%;
+        padding-left: 2.5%;
         padding-right: 2.5%;
     }
 }
@@ -83,7 +84,6 @@ header nav ul li form button {
     color: #fff;
     border: none;
     padding: 10px 20px;
-    border-radius: 30px;
     text-decoration: none;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease;
@@ -100,19 +100,16 @@ header nav ul li form button:hover {
 header nav ul li form {
     margin: 0;
     padding: 0;
-    display: inline-block; /* Ensure the form aligns properly */
+    display: inline-block;
 }
 
 header nav ul li form button {
-    margin: 0;
-    padding: 10px 20px; /* Ensure the button padding matches the links */
-    width: auto;
+    padding: 10px 20px;
     font-size: 16px;
-    text-transform: uppercase;
     font-weight: 600;
-    background-color: #28a745; /* Match the background color */
+    text-transform: uppercase;
+    background-color: #28a745;
     border: none;
-    border-radius: 30px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
@@ -130,7 +127,6 @@ header nav ul li form button {
     font-size: 16px;
     font-weight: 600;
     border: none;
-    border-radius: 30px;
     cursor: pointer;
     text-transform: uppercase;
     transition: background-color 0.3s ease, transform 0.3s ease;
@@ -149,8 +145,7 @@ header nav ul li form button {
     min-width: 160px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1;
-    border-radius: 5px;
-    overflow: hidden; /* Ensures content stays within bounds */
+    overflow: hidden;
     top: 45px;
     right: 0;
 }
@@ -180,7 +175,6 @@ header nav ul li form button {
     display: block; /* Show dropdown on hover */
 }
 
-
 /* Buttons */
 button, .btn {
     background-color: #28a745;
@@ -189,7 +183,6 @@ button, .btn {
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
-    border-radius: 30px;
     transition: background-color 0.3s ease, transform 0.3s ease;
     display: inline-block;
     margin-top: 10px;
@@ -205,7 +198,6 @@ button:hover, .btn:hover {
 form {
     background-color: #fff;
     padding: 20px;
-    border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
@@ -215,11 +207,10 @@ form input[type="email"],
 form input[type="password"],
 form select,
 form textarea {
-    width: 100%; /* Ensure full width for inputs */
+    width: 100%;
     padding: 15px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
-    border-radius: 5px;
     font-size: 16px;
     box-sizing: border-box;
     transition: border-color 0.3s ease;
@@ -234,13 +225,12 @@ form textarea:focus {
 }
 
 form button {
-    width: 100%; /* Ensure full width for buttons */
+    width: 100%;
     background-color: #28a745;
     color: #fff;
     border: none;
     padding: 15px;
     font-size: 18px;
-    border-radius: 30px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease;
 }
@@ -292,14 +282,13 @@ footer p {
     }
 
     form button {
-        width: 100%; /* Ensure buttons are full-width on mobile */
+        width: 100%;
     }
 }
 
 .profile-container {
     background-color: #fff;
     padding: 20px;
-    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
@@ -327,7 +316,7 @@ footer p {
 
 audio {
     width: 100%;
-    max-width: 300px; /* Adjust based on your design */
+    max-width: 300px;
 }
 
 table {
@@ -346,6 +335,144 @@ th {
     background-color: #f4f4f4;
 }
 
-form {
-    margin-top: 20px;
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.dashboard-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.dashboard-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    background-color: #28a745;
+    color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    flex: 1;
+    margin: 0 10px;
+}
+
+.dashboard-section {
+    margin-bottom: 40px;
+}
+
+.tracks-grid, .submissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.track-item, .submission-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.track-item h3, .submission-item h3 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.btn-upload, .btn-submit, .btn-create-campaign, .btn-play, .btn-watch {
+    display: inline-block;
+    background-color: #28a745;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-upload:hover, .btn-submit:hover, .btn-create-campaign:hover, .btn-play:hover, .btn-watch:hover {
+    background-color: #218838;
+}
+
+.btn-play {
+    margin-right: 10px;
+}
+
+@media (max-width: 768px) {
+    .dashboard-stats {
+        flex-direction: column;
+    }
+
+    .stat-item {
+        margin-bottom: 20px;
+    }
+}
+
+/* Dark Theme Styles */
+body.dark-theme {
+    background-color: #121212;
+    color: #f1f1f1;
+}
+
+body.dark-theme header nav {
+    background-color: #1f1f1f;
+    color: #f1f1f1;
+}
+
+body.dark-theme header nav ul li a,
+body.dark-theme header nav ul li form button,
+body.dark-theme header nav ul .dropbtn {
+    background-color: #333;
+    color: #f1f1f1;
+}
+
+body.dark-theme header nav ul li a:hover,
+body.dark-theme header nav ul li form button:hover,
+body.dark-theme header nav ul .dropbtn:hover {
+    background-color: #555;
+}
+
+body.dark-theme .container {
+    background-color: #1e1e1e;
+}
+
+body.dark-theme button,
+body.dark-theme .btn {
+    background-color: #333;
+    color: #f1f1f1;
+}
+
+body.dark-theme button:hover,
+body.dark-theme .btn:hover {
+    background-color: #555;
+}
+
+body.dark-theme input[type="text"],
+body.dark-theme input[type="email"],
+body.dark-theme input[type="password"],
+body.dark-theme select,
+body.dark-theme textarea {
+    background-color: #333;
+    color: #f1f1f1;
+    border: 1px solid #555;
+}
+
+body.dark-theme table th,
+body.dark-theme table td {
+    background-color: #1e1e1e;
+    color: #f1f1f1;
+}
+
+body.dark-theme footer {
+    background-color: #1f1f1f;
+    color: #f1f1f1;
 }

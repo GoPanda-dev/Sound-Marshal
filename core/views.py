@@ -1,12 +1,108 @@
+import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileForm, UserForm, TrackForm, FeedbackForm, SubmissionForm, CampaignForm
 from .models import Profile, Track, Submission, Campaign, User
+import stripe
+from django.conf import settings
+from .models import Payment, Subscription, Credit
+from django.views.decorators.csrf import csrf_exempt
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
+
+# Load Stripe API keys
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+@login_required
+@csrf_exempt
+def purchase_credits(request):
+    if request.method == 'POST':
+        token = request.POST.get('stripeToken')  # Get the token from the form
+        amount = int(request.POST.get('amount'))  # Get the amount from the form (in dollars)
+        amount_in_cents = amount * 100  # Convert to cents for Stripe
+
+        try:
+            charge = stripe.Charge.create(
+                amount=amount_in_cents,
+                currency='usd',
+                description=f"Credits for {request.user.username}",
+                source=token  # Pass the token here
+            )
+
+            # Create and save the Payment record
+            Payment.objects.create(
+                user=request.user,
+                amount=amount,
+                status='Completed',  # Assuming the payment was successful
+                description=f"Purchase of {amount} credits"
+            )
+
+            # Update the user's wallet balance
+            profile = request.user.profile
+            profile.tokens += amount  # Assuming 1 dollar = 1 token
+            profile.save()
+
+            return redirect('wallet')
+        except stripe.error.StripeError as e:
+            # Handle the error
+            Payment.objects.create(
+                user=request.user,
+                amount=amount,
+                status='Failed',
+                description=str(e)
+            )
+            return render(request, 'core/wallet.html', {'error': str(e), 'balance': request.user.profile.tokens})
+
+    return redirect('wallet')
+
+@login_required
+def subscribe(request):
+    if request.method == 'POST':
+        plan_id = request.POST['plan_id']  # ID of the plan
+
+        customer = stripe.Customer.create(
+            email=request.user.email,
+            source=request.POST['stripeToken']
+        )
+
+        subscription = stripe.Subscription.create(
+            customer=customer['id'],
+            items=[{'plan': plan_id}]
+        )
+
+        Subscription.objects.create(
+            user=request.user,
+            stripe_subscription_id=subscription['id'],
+        )
+
+        return redirect('artist_dashboard')
+
+    return render(request, 'core/subscribe.html', {
+        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+    })
+
+@login_required
+def manage_subscription(request):
+    subscription = get_object_or_404(Subscription, user=request.user)
+
+    if request.method == 'POST':
+        subscription.cancel()
+        return redirect('artist_dashboard')
+
+    return render(request, 'core/manage_subscription.html', {
+        'subscription': subscription
+    })
 
 @login_required
 def wallet(request):
-    profile = request.user.profile
-    return render(request, 'core/wallet.html', {'balance': profile.tokens})
+    payments = Payment.objects.filter(user=request.user).order_by('-date')
+    return render(request, 'core/wallet.html', {
+        'balance': request.user.profile.tokens,
+        'payments': payments,
+        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+    })
+
 
 @login_required
 def submit_track(request, track_id):
@@ -221,4 +317,16 @@ def create_campaign(request):
     return render(request, 'core/create_campaign.html', {'form': form})
 
 def home(request):
-    return render(request, 'core/home.html')
+    recommended_curators = []
+    recommended_artists = []
+    
+    if request.user.is_authenticated:
+        if request.user.profile.is_artist:
+            recommended_curators = User.objects.filter(profile__role='curator').order_by('?')[:3]
+        elif request.user.profile.is_curator:
+            recommended_artists = User.objects.filter(profile__role='artist').order_by('?')[:3]
+
+    return render(request, 'core/home.html', {
+        'recommended_curators': recommended_curators,
+        'recommended_artists': recommended_artists,
+    })

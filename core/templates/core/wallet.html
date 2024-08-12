@@ -3,15 +3,192 @@
 {% block title %}Wallet{% endblock %}
 
 {% block content %}
-<h1>Your Wallet</h1>
+<div class="wallet-container">
+    <h1>Wallet</h1>
+    <p>Your current balance: {{ balance }} tokens</p>
 
-<p>Your current balance: ${{ profile.tokens }}</p>
+    {% if error %}
+        <div class="error">
+            <p>{{ error }}</p>
+        </div>
+    {% endif %}
 
-<h2>Add Funds</h2>
-<form method="post">
-    {% csrf_token %}
-    <label for="amount">Amount:</label>
-    <input type="number" id="amount" name="amount" min="1" required>
-    <button type="submit">Add Funds</button>
-</form>
+    <h2>Add Funds</h2>
+    <form id="payment-form" method="post" action="{% url 'purchase_credits' %}">
+        {% csrf_token %}
+        <label for="amount">Amount (USD):</label>
+        <input type="number" id="amount" name="amount" min="1" required>
+
+        <!-- Stripe Card Element -->
+        <div id="card-element">
+            <!-- A Stripe Element will be inserted here. -->
+        </div>
+
+        <!-- Used to display form errors. -->
+        <div id="card-errors" role="alert"></div>
+
+        <button type="submit" class="stripe-button">Add Funds</button>
+    </form>
+
+    <!-- Transaction History Section -->
+    <h2>Transaction History</h2>
+    {% if payments %}
+        <table class="transaction-history">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.date|date:"Y-m-d H:i" }}</td>
+                        <td>${{ payment.amount }}</td>
+                        <td>{{ payment.status }}</td>
+                        <td>{{ payment.description }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No transactions yet.</p>
+    {% endif %}
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripe = Stripe('{{ stripe_public_key }}');
+    const elements = stripe.elements();
+    const cardElement = elements.create('card');
+    cardElement.mount('#card-element');
+
+    const form = document.getElementById('payment-form');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const { token, error } = await stripe.createToken(cardElement);
+
+        if (error) {
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = error.message;
+        } else {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'stripeToken');
+            hiddenInput.setAttribute('value', token.id);
+            form.appendChild(hiddenInput);
+
+            form.submit();
+        }
+    });
+</script>
+
+<style>
+    .wallet-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    .wallet-container h1 {
+        margin-bottom: 20px;
+        font-size: 28px;
+        color: #28a745;
+    }
+    
+    .wallet-container p {
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    
+    .wallet-container form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .wallet-container label {
+        font-size: 18px;
+        color: #333;
+        font-weight: bold;
+    }
+    
+    .wallet-container input[type="number"] {
+        padding: 12px;
+        font-size: 18px;
+        border: 2px solid #28a745;
+        border-radius: 5px;
+        width: 100%;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }
+    
+    .wallet-container input[type="number"]:focus {
+        border-color: #218838;
+        outline: none;
+    }
+
+    #card-element {
+        padding: 12px;
+        font-size: 18px;
+        border: 2px solid #28a745;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+    }
+
+    #card-element:focus {
+        border-color: #218838;
+        outline: none;
+    }
+
+    .wallet-container .stripe-button {
+        background-color: #28a745;
+        color: #fff;
+        border-radius: 5px;
+        padding: 15px;
+        font-size: 18px;
+        cursor: pointer;
+        width: 100%;
+        text-align: center;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+    
+    .wallet-container .stripe-button:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+    }
+
+    #card-errors {
+        color: #e74c3c;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+
+    /* Transaction History Styles */
+    .transaction-history {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .transaction-history th, .transaction-history td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+    }
+
+    .transaction-history th {
+        background-color: #28a745;
+        color: #fff;
+    }
+</style>
 {% endblock %}

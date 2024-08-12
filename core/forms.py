@@ -25,7 +25,12 @@ class UserForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['name', 'bio', 'genre', 'social_media_link', 'role']
+        fields = [
+            'role', 'name', 'bio', 'genre',
+            'facebook_link', 'youtube_link', 'whatsapp_link',
+            'instagram_link', 'tiktok_link', 'wechat_link',
+            'messenger_link', 'telegram_link', 'viber_link', 'snapchat_link'
+        ]
 
 class CampaignForm(forms.ModelForm):
     class Meta:

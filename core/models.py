@@ -1,3 +1,4 @@
+import os
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
@@ -5,9 +6,45 @@ from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.conf import settings
 
-def match_curators(track):
-    curators = User.objects.filter(profile__role='curator', profile__genre=track.genre)
+import stripe
+
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+class Payment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50)  # e.g., 'Completed', 'Failed'
+    description = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.user.username} - ${self.amount} - {self.status} on {self.date}'
+
+class Subscription(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    stripe_subscription_id = models.CharField(max_length=50)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Subscription for {self.user.username}"
+
+    def cancel(self):
+        stripe.Subscription.delete(self.stripe_subscription_id)
+        self.active = False
+        self.save()
+
+class Credit(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    credits = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.credits} credits for {self.user.username}"
+
+
+def match_curators(campaign):
+    curators = User.objects.filter(profile__role='curator', profile__genre=campaign.target_genre)
     return curators
 
 class Profile(models.Model):
@@ -15,13 +52,26 @@ class Profile(models.Model):
         ('artist', 'Artist'),
         ('curator', 'Curator/Label'),
     )
+
     tokens = models.IntegerField(default=0)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, blank=True, null=True)
     name = models.CharField(max_length=255)
     bio = models.TextField(blank=True, null=True)
     genre = models.CharField(max_length=100, default='None')
-    social_media_link = models.URLField(max_length=200, blank=True, null=True)
+
+    # Social Media Links
+    facebook_link = models.URLField(max_length=200, blank=True, null=True)
+    youtube_link = models.URLField(max_length=200, blank=True, null=True)
+    whatsapp_link = models.URLField(max_length=200, blank=True, null=True)
+    instagram_link = models.URLField(max_length=200, blank=True, null=True)
+    tiktok_link = models.URLField(max_length=200, blank=True, null=True)
+    wechat_link = models.URLField(max_length=200, blank=True, null=True)
+    messenger_link = models.URLField(max_length=200, blank=True, null=True)
+    telegram_link = models.URLField(max_length=200, blank=True, null=True)
+    viber_link = models.URLField(max_length=200, blank=True, null=True)
+    snapchat_link = models.URLField(max_length=200, blank=True, null=True)
+
     role_selected = models.BooleanField(default=False)
 
     def __str__(self):
@@ -34,7 +84,7 @@ class Profile(models.Model):
     @property
     def is_curator(self):
         return self.role == 'curator'
-
+    
 class Track(models.Model):
     artist = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -50,8 +100,8 @@ class Campaign(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     target_genre = models.CharField(max_length=100)
+    budget = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     curators_targeted = models.ManyToManyField(User, related_name='targeted_campaigns')
-    budget = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Added budget field
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -69,6 +119,7 @@ class Campaign(models.Model):
                 curator=curator,
                 campaign=self
             )
+
 
 class Submission(models.Model):
     track = models.ForeignKey(Track, on_delete=models.CASCADE)

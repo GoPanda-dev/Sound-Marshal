@@ -3,14 +3,45 @@
 {% block title %}My Profile{% endblock %}
 
 {% block content %}
-<h1>{{ profile.name }}'s Profile</h1>
+<!-- core/profile_detail.html -->
+<div class="profile-container">
+    <h2>{{ profile.name }}</h2>
+    <p>{{ profile.bio }}</p>
+    <p>Genre: {{ profile.genre }}</p>
+    <div class="social-media-links">
+        {% if profile.facebook_link %}
+            <p>Facebook: <a href="{{ profile.facebook_link }}" target="_blank">{{ profile.facebook_link }}</a></p>
+        {% endif %}
+        {% if profile.youtube_link %}
+            <p>YouTube: <a href="{{ profile.youtube_link }}" target="_blank">{{ profile.youtube_link }}</a></p>
+        {% endif %}
+        {% if profile.whatsapp_link %}
+            <p>WhatsApp: <a href="{{ profile.whatsapp_link }}" target="_blank">{{ profile.whatsapp_link }}</a></p>
+        {% endif %}
+        {% if profile.instagram_link %}
+            <p>Instagram: <a href="{{ profile.instagram_link }}" target="_blank">{{ profile.instagram_link }}</a></p>
+        {% endif %}
+        {% if profile.tiktok_link %}
+            <p>TikTok: <a href="{{ profile.tiktok_link }}" target="_blank">{{ profile.tiktok_link }}</a></p>
+        {% endif %}
+        {% if profile.wechat_link %}
+            <p>WeChat: <a href="{{ profile.wechat_link }}" target="_blank">{{ profile.wechat_link }}</a></p>
+        {% endif %}
+        {% if profile.messenger_link %}
+            <p>Messenger: <a href="{{ profile.messenger_link }}" target="_blank">{{ profile.messenger_link }}</a></p>
+        {% endif %}
+        {% if profile.telegram_link %}
+            <p>Telegram: <a href="{{ profile.telegram_link }}" target="_blank">{{ profile.telegram_link }}</a></p>
+        {% endif %}
+        {% if profile.viber_link %}
+            <p>Viber: <a href="{{ profile.viber_link }}" target="_blank">{{ profile.viber_link }}</a></p>
+        {% endif %}
+        {% if profile.snapchat_link %}
+            <p>Snapchat: <a href="{{ profile.snapchat_link }}" target="_blank">{{ profile.snapchat_link }}</a></p>
+        {% endif %}
+    </div>
+    
+</div>
 
-<p><strong>Role:</strong> {{ profile.role }}</p>
-<p><strong>Bio:</strong> {{ profile.bio }}</p>
-<p><strong>Genre:</strong> {{ profile.genre }}</p>
-<p><strong>Social Media:</strong> <a href="{{ profile.social_media_link }}" target="_blank">{{ profile.social_media_link }}</a></p>
 
-{% if profile.is_artist %}
-    <h2>Wallet Balance: ${{ profile.tokens }}</h2>
-{% endif %}
 {% endblock %}

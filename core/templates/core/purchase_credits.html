@@ -1,0 +1,13 @@
+<form action="{% url 'purchase_credits' %}" method="POST">
+    {% csrf_token %}
+    <script
+        src="https://checkout.stripe.com/checkout.js"
+        class="stripe-button"
+        data-key="{{ stripe_public_key }}"
+        data-amount="500"  <!-- Adjust this amount dynamically -->
+        data-name="Sound Marshal"
+        data-description="Purchase Credits"
+        data-image="https://yourdomain.com/static/img/logo.png"
+        data-locale="auto">
+    </script>
+</form>

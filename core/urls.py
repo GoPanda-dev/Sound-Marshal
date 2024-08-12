@@ -21,4 +21,8 @@ urlpatterns = [
     path('submissions/<int:submission_id>/', views.submission_detail, name='submission_detail'),
     path('feedback/<int:submission_id>/', views.provide_feedback, name='provide_feedback'),
     path('campaigns/overview/', views.campaign_overview, name='campaign_overview'),
+
+    path('purchase-credits/', views.purchase_credits, name='purchase_credits'),
+    path('subscribe/', views.subscribe, name='subscribe'),
+    path('manage-subscription/', views.manage_subscription, name='manage_subscription'),
 ]

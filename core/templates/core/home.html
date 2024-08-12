@@ -3,91 +3,151 @@
 {% block title %}Sound Marshal{% endblock %}
 
 {% block content %}
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .main-content {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .btn-primary {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .btn-primary:hover {
-            background-color: #218838;
-        }
 
-        /* Styles when not signed in */
-        .not-signed-in .header {
-            background-color: #343a40;
-        }
-        .not-signed-in .main-content h2 {
-            color: #28a745;
-        }
+<div class="header">
+    <h1>Welcome to Sound Marshal</h1>
+</div>
 
-        /* Styles for Artists */
-        .artist .header {
-            background-color: #1e7e34;
-        }
-        .artist .main-content h2 {
-            color: #28a745;
-        }
+<div class="container">
+    <div class="main-content">
+        {% if not user.is_authenticated %}
+            <h2>Discover and Connect with Curators</h2>
+            <p>Join our platform to get your music heard by industry professionals. Sign up now and take your music to the next level.</p>
+            <a href="{% url 'account_signup' %}" class="btn-primary">Sign Up</a>
+        {% elif user.profile.is_artist %}
+            <h2>Welcome back, {{ user.profile.name }}!</h2>
+            <p class="custom-message">Ready to submit new tracks? Explore the dashboard and connect with top curators.</p>
+            <a href="{% url 'artist_dashboard' %}" class="btn-primary">Go to Dashboard</a>
 
-        /* Styles for Curators */
-        .curator .header {
-            background-color: #155724;
-        }
-        .curator .main-content h2 {
-            color: #28a745;
-        }
+            <!-- Recommended Curators Section -->
+            <h3>Top 3 Recommended Curators</h3>
+            <ul class="recommendations-list">
+                {% for curator in recommended_curators %}
+                    <li>
+                        <h4>{{ curator.profile.name }}</h4>
+                        <p>Genre: {{ curator.profile.genre }}</p>
+                        <a href="{% url 'profile_detail' curator.profile.pk %}" class="btn btn-view-profile">View Profile</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif user.profile.is_curator %}
+            <h2>Welcome back, {{ user.profile.name }}!</h2>
+            <p class="custom-message">Discover new talent and provide feedback to help artists grow. Head over to your dashboard to see new submissions.</p>
+            <a href="{% url 'curator_dashboard' %}" class="btn-primary">Go to Dashboard</a>
 
-        .custom-message {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #28a745;
-        }
+            <!-- Recommended Artists Section -->
+            <h3>Top 3 Recommended Artists</h3>
+            <ul class="recommendations-list">
+                {% for artist in recommended_artists %}
+                    <li>
+                        <h4>{{ artist.profile.name }}</h4>
+                        <p>Genre: {{ artist.profile.genre }}</p>
+                        <a href="{% url 'profile_detail' artist.profile.pk %}" class="btn btn-view-profile">View Profile</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-        .main-content p {
-            color: #343a40;
-        }
-    </style>
-
-    <div class="header">
-        <h1>Welcome to Sound Marshal</h1>
-    </div>
-
-    <div class="container">
-        <div class="main-content">
-            {% if not user.is_authenticated %}
-                <h2>Discover and Connect with Curators</h2>
-                <p>Join our platform to get your music heard by industry professionals. Sign up now and take your music to the next level.</p>
-                <a href="{% url 'account_signup' %}" class="btn-primary">Sign Up</a>
-            {% elif user.profile.is_artist %}
-                <h2>Welcome back, {{ user.profile.name }}!</h2>
-                <p class="custom-message">Ready to submit new tracks? Explore the dashboard and connect with top curators.</p>
-                <a href="{% url 'artist_dashboard' %}" class="btn-primary">Go to Dashboard</a>
-            {% elif user.profile.is_curator %}
-                <h2>Welcome back, {{ user.profile.name }}!</h2>
-                <p class="custom-message">Discover new talent and provide feedback to help artists grow. Head over to your dashboard to see new submissions.</p>
-                <a href="{% url 'curator_dashboard' %}" class="btn-primary">Go to Dashboard</a>
-            {% endif %}
+        <!-- How It Works Section -->
+        <div class="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                    <h3>1. Upload Tracks</h3>
+                    <p>Artists upload their tracks to share with curators.</p>
+                </div>
+                <div class="step">
+                    <i class="fas fa-users fa-3x"></i>
+                    <h3>2. Select Curators & Create Campaign</h3>
+                    <p>Choose the curators you want to review your tracks and create a campaign.</p>
+                </div>
+                <div class="step">
+                    <i class="fas fa-headphones-alt fa-3x"></i>
+                    <h3>3. Curators Review</h3>
+                    <p>Curators listen to your tracks, provide feedback, and share them.</p>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+
+<!-- Include Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+    .recommendations-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .recommendations-list li {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+
+    .recommendations-list h4 {
+        margin: 0 0 10px;
+        color: #28a745;
+    }
+
+    .btn-view-profile {
+        background-color: #28a745;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-view-profile:hover {
+        background-color: #218838;
+    }
+
+    .how-it-works {
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .how-it-works h2 {
+        margin-bottom: 30px;
+        color: #28a745;
+    }
+
+    .steps-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .step {
+        flex: 1;
+        min-width: 200px;
+        max-width: 300px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin: 10px;
+        text-align: center;
+    }
+
+    .step i {
+        color: #28a745;
+        margin-bottom: 15px;
+    }
+
+    .step h3 {
+        color: #28a745;
+        margin-bottom: 10px;
+    }
+
+    .step p {
+        color: #555;
+    }
+</style>
+
 {% endblock %}

@@ -1,0 +1,6 @@
+<h2>Manage Subscription</h2>
+<p>Current Subscription: {{ subscription.stripe_subscription_id }}</p>
+<form action="{% url 'manage_subscription' %}" method="POST">
+    {% csrf_token %}
+    <button type="submit">Cancel Subscription</button>
+</form>
