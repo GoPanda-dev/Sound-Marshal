@@ -1,37 +1,86 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Curator/Label Dashboard{% endblock %}
+{% block title %}Curator Dashboard{% endblock %}
 
 {% block content %}
-<h2>Browse Submissions</h2>
-<form method="get">
-    <label for="genre">Filter by Genre:</label>
-    <select name="genre" id="genre">
-        <option value="">All</option>
-        <option value="Pop">Pop</option>
-        <option value="Rock">Rock</option>
-        <option value="Hip-Hop">Hip-Hop</option>
-        <!-- Add more genres as needed -->
-    </select>
-    <button type="submit" class="btn">Filter</button>
-</form>
+<style>
+    .submissions-grid {
+        display: grid;
+        grid-template-columns: 1fr; /* Default to single column */
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .submission-item {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .submission-item h3 {
+        margin-top: 0;
+        color: #333;
+    }
+    
+    .submission-item p {
+        color: #555;
+    }
+    
+    .submission-item button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    
+    .submission-item button:hover {
+        background-color: #218838;
+    }
+    
+    /* Responsive grid layout */
+    @media(min-width: 600px) {
+        .submissions-grid {
+            grid-template-columns: 1fr 1fr; /* Two columns on medium screens */
+        }
+    }
+    
+    @media(min-width: 900px) {
+        .submissions-grid {
+            grid-template-columns: 1fr 1fr 1fr; /* Three columns on large screens */
+        }
+    }
+    
+</style>
 
-<ul>
+<h1>Curator Dashboard</h1>
+
+<h2>Submissions</h2>
+<div class="submissions-grid">
     {% for submission in submissions %}
-    <li>
-        <strong>{{ submission.track.title }}</strong> by {{ submission.track.artist.username }} (Genre: {{ submission.track.genre }})<br>
-        Submitted on {{ submission.submission_date }} - Status: {{ submission.status }}
-        {% if submission.feedback %}
-        <br><strong>Feedback:</strong> {{ submission.feedback }}
-        {% else %}
-        <form method="post">
+    <div class="submission-item">
+        <h3>{{ submission.track.title }} by {{ submission.track.artist.profile.name }}</h3>
+        <p>Status: {{ submission.status }}</p>
+
+        <!-- Play button -->
+        <button onclick="playTrack('{{ submission.track.file.url }}')">Play</button>
+
+        <!-- Feedback form -->
+        {% if submission.status == 'pending' %}
+        <form method="post" action="{% url 'provide_feedback' submission.id %}" enctype="multipart/form-data">
             {% csrf_token %}
-            <textarea name="feedback" placeholder="Provide feedback..."></textarea>
-            <input type="hidden" name="submission_id" value="{{ submission.id }}">
-            <button type="submit" class="btn">Submit Feedback</button>
+            <textarea name="feedback" placeholder="Enter feedback"></textarea>
+            <input type="number" name="rating" placeholder="Rating (1-5)" min="1" max="5">
+            <input type="file" name="voice_feedback">
+            <input type="file" name="video_feedback">
+            <button type="submit">Submit Feedback</button>
         </form>
         {% endif %}
-    </li>
+    </div>
     {% endfor %}
-</ul>
+</div>
 {% endblock %}

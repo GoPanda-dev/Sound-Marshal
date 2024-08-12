@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Submission</title>
+</head>
+<body>
+    <h1>New Submission Received</h1>
+    <p>Dear {{ submission.curator.profile.name }},</p>
+    <p>A new track titled "{{ submission.track.title }}" has been submitted to you by {{ submission.track.artist.profile.name }}.</p>
+    <p>Genre: {{ submission.track.genre }}</p>
+    <p>Please log in to your dashboard to review the submission.</p>
+    <p>Best regards,<br/>Sound Marshal Team</p>
+</body>
+</html>

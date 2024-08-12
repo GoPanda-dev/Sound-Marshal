@@ -10,45 +10,12 @@ def match_curators(track):
     curators = User.objects.filter(profile__role='curator', profile__genre=track.genre)
     return curators
 
-class Track(models.Model):
-    artist = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
-    genre = models.CharField(max_length=100)
-    file = models.FileField(upload_to='tracks/')
-    upload_date = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title
-
-class Submission(models.Model):
-    track = models.ForeignKey(Track, on_delete=models.CASCADE)
-    curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='curator_submissions')
-    feedback = models.TextField(blank=True, null=True)
-    submission_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, choices=[('pending', 'Pending'), ('reviewed', 'Reviewed')], default='pending')
-    comments = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.track.title} to {self.curator.username}"
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.notify_curator()
-
-    def notify_curator(self):
-        subject = f"New Submission: {self.track.title}"
-        html_message = render_to_string('emails/new_submission.html', {'submission': self})
-        plain_message = strip_tags(html_message)
-        from_email = 'no-reply@soundmarshal.com'
-        to = self.curator.email
-        send_mail(subject, plain_message, from_email, [to], html_message=html_message)
-
 class Profile(models.Model):
     ROLE_CHOICES = (
         ('artist', 'Artist'),
         ('curator', 'Curator/Label'),
     )
-
+    tokens = models.IntegerField(default=0)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES, blank=True, null=True)
     name = models.CharField(max_length=255)
@@ -67,6 +34,68 @@ class Profile(models.Model):
     @property
     def is_curator(self):
         return self.role == 'curator'
+
+class Track(models.Model):
+    artist = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    genre = models.CharField(max_length=100)
+    file = models.FileField(upload_to='tracks/')
+    upload_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+class Campaign(models.Model):
+    artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name='campaigns')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    target_genre = models.CharField(max_length=100)
+    curators_targeted = models.ManyToManyField(User, related_name='targeted_campaigns')
+    budget = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Added budget field
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.create_submissions()
+
+    def create_submissions(self):
+        curators = match_curators(self)
+        for curator in curators:
+            Submission.objects.create(
+                track=self.track,
+                curator=curator,
+                campaign=self
+            )
+
+class Submission(models.Model):
+    track = models.ForeignKey(Track, on_delete=models.CASCADE)
+    curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='curator_submissions')
+    feedback = models.TextField(blank=True, null=True)
+    submission_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, choices=[('pending', 'Pending'), ('reviewed', 'Reviewed')], default='pending')
+    comments = models.TextField(blank=True, null=True)
+    rating = models.IntegerField(blank=True, null=True)
+    voice_feedback = models.FileField(upload_to='voice_feedback/', blank=True, null=True)
+    video_feedback = models.FileField(upload_to='video_feedback/', blank=True, null=True)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='submissions', null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.track.title} to {self.curator.username}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.notify_curator()
+
+    def notify_curator(self):
+        subject = f"New Submission: {self.track.title}"
+        html_message = render_to_string('emails/new_submission.html', {'submission': self})
+        plain_message = strip_tags(html_message)
+        from_email = 'no-reply@soundmarshal.com'
+        to = self.curator.email
+        send_mail(subject, plain_message, from_email, [to], html_message=html_message)
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Campaign: {{ campaign.title }}{% endblock %}
+
+{% block content %}
+<h1>Campaign: {{ campaign.title }}</h1>
+
+<p><strong>Description:</strong> {{ campaign.description }}</p>
+<p><strong>Target Genre:</strong> {{ campaign.target_genre }}</p>
+<p><strong>Curators Targeted:</strong> {{ campaign.curators_targeted.count }}</p>
+
+<h2>Submissions</h2>
+<ul>
+    {% for submission in campaign.submissions.all %}
+        <li>
+            <strong>{{ submission.track.title }}</strong> submitted to {{ submission.curator.profile.name }} - Status: {{ submission.status }}
+            {% if submission.feedback %}
+                <div>Feedback: {{ submission.feedback }}</div>
+            {% endif %}
+            {% if submission.rating %}
+                <div>Rating: {{ submission.rating }} / 5</div>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

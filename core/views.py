@@ -1,7 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import ProfileForm, UserForm, TrackForm, FeedbackForm, SubmissionForm
-from .models import Profile, Track, Submission, User
+from .forms import ProfileForm, UserForm, TrackForm, FeedbackForm, SubmissionForm, CampaignForm
+from .models import Profile, Track, Submission, Campaign, User
+
+@login_required
+def wallet(request):
+    profile = request.user.profile
+    return render(request, 'core/wallet.html', {'balance': profile.tokens})
 
 @login_required
 def submit_track(request, track_id):
@@ -56,8 +61,15 @@ def curator_dashboard(request):
     if request.method == 'POST':
         submission_id = request.POST.get('submission_id')
         feedback = request.POST.get('feedback')
-        submission = Submission.objects.get(id=submission_id)
+        rating = request.POST.get('rating')
+        voice_feedback = request.FILES.get('voice_feedback')
+        video_feedback = request.FILES.get('video_feedback')
+
+        submission = get_object_or_404(Submission, id=submission_id)
         submission.feedback = feedback
+        submission.rating = rating
+        submission.voice_feedback = voice_feedback
+        submission.video_feedback = video_feedback
         submission.status = 'reviewed'
         submission.save()
         return redirect('curator_dashboard')
@@ -67,6 +79,47 @@ def curator_dashboard(request):
     }
     return render(request, 'core/curator_dashboard.html', context)
 
+@login_required
+def campaign_list(request):
+    campaigns = Campaign.objects.filter(artist=request.user)
+    return render(request, 'core/campaign_list.html', {'campaigns': campaigns})
+
+@login_required
+def campaign_detail(request, campaign_id):
+    campaign = get_object_or_404(Campaign, id=campaign_id)
+    return render(request, 'core/campaign_detail.html', {'campaign': campaign})
+
+@login_required
+def submission_list(request, campaign_id):
+    campaign = get_object_or_404(Campaign, id=campaign_id)
+    submissions = Submission.objects.filter(campaign=campaign)
+    return render(request, 'core/submission_list.html', {'campaign': campaign, 'submissions': submissions})
+
+@login_required
+def submission_detail(request, submission_id):
+    submission = get_object_or_404(Submission, id=submission_id)
+    return render(request, 'core/submission_detail.html', {'submission': submission})
+
+@login_required
+def provide_feedback(request, submission_id):
+    submission = get_object_or_404(Submission, id=submission_id)
+
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST, request.FILES, instance=submission)
+        if form.is_valid():
+            form.save()
+            return redirect('curator_dashboard')
+    else:
+        form = FeedbackForm(instance=submission)
+
+    return render(request, 'core/provide_feedback.html', {'form': form, 'submission': submission})
+
+@login_required
+def campaign_overview(request):
+    campaigns = Campaign.objects.filter(artist=request.user)
+    return render(request, 'core/campaign_overview.html', {'campaigns': campaigns})
+
+@login_required
 def profile_detail(request, pk):
     profile = get_object_or_404(Profile, pk=pk)
     return render(request, 'core/profile_detail.html', {'profile': profile})
@@ -152,6 +205,20 @@ def create_curator_label_profile(request):
         form = ProfileForm(instance=profile)
 
     return render(request, 'core/create_curator_label_profile.html', {'form': form})
+
+@login_required
+def create_campaign(request):
+    if request.method == 'POST':
+        form = CampaignForm(request.POST)
+        if form.is_valid():
+            campaign = form.save(commit=False)
+            campaign.artist = request.user
+            campaign.save()
+            return redirect('artist_dashboard')
+    else:
+        form = CampaignForm()
+
+    return render(request, 'core/create_campaign.html', {'form': form})
 
 def home(request):
     return render(request, 'core/home.html')

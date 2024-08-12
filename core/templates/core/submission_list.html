@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Submissions for {{ campaign.title }}{% endblock %}
+
+{% block content %}
+<h1>Submissions for {{ campaign.title }}</h1>
+
+<ul>
+    {% for submission in submissions %}
+        <li>
+            <strong>{{ submission.track.title }}</strong> submitted to {{ submission.curator.profile.name }} - Status: {{ submission.status }}
+            {% if submission.feedback %}
+                <div>Feedback: {{ submission.feedback }}</div>
+            {% endif %}
+            {% if submission.rating %}
+                <div>Rating: {{ submission.rating }} / 5</div>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

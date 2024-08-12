@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Campaign Overview{% endblock %}
+
+{% block content %}
+<h1>Campaign Overview</h1>
+
+<ul>
+    {% for campaign in campaigns %}
+        <li>
+            <strong>{{ campaign.title }}</strong> - {{ campaign.target_genre }}
+            <p>{{ campaign.description }}</p>
+            <a href="{% url 'campaign_detail' campaign.id %}">View Campaign</a>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

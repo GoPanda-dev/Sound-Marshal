@@ -1,20 +1,21 @@
 {% extends 'base.html' %}
 
+{% block title %}Submit Track{% endblock %}
+
 {% block content %}
 <h1>Submit Track: {{ track.title }}</h1>
 
 <form method="post">
     {% csrf_token %}
-    <label for="curator">Select Curator:</label>
-    <select name="curator_id">
+    <label for="curator_id">Choose a Curator:</label>
+    <select name="curator_id" id="curator_id">
         {% for curator in curators %}
             <option value="{{ curator.id }}">{{ curator.profile.name }}</option>
         {% endfor %}
     </select>
 
-    <label for="comments">Comments or Instructions:</label>
-    <textarea name="comments" id="comments" rows="5"></textarea>
+    {{ form.as_p }}
 
-    <button type="submit">Submit Track</button>
+    <button type="submit">Submit</button>
 </form>
 {% endblock %}

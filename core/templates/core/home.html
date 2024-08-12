@@ -1,8 +1,93 @@
 {% extends 'base.html' %}
 
-{% block title %}Home{% endblock %}
+{% block title %}Sound Marshal{% endblock %}
 
 {% block content %}
-<h1>Welcome to Sound Marshal</h1>
-<p>This is your music submission and curation platform.</p>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .main-content {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background-color: #218838;
+        }
+
+        /* Styles when not signed in */
+        .not-signed-in .header {
+            background-color: #343a40;
+        }
+        .not-signed-in .main-content h2 {
+            color: #28a745;
+        }
+
+        /* Styles for Artists */
+        .artist .header {
+            background-color: #1e7e34;
+        }
+        .artist .main-content h2 {
+            color: #28a745;
+        }
+
+        /* Styles for Curators */
+        .curator .header {
+            background-color: #155724;
+        }
+        .curator .main-content h2 {
+            color: #28a745;
+        }
+
+        .custom-message {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #28a745;
+        }
+
+        .main-content p {
+            color: #343a40;
+        }
+    </style>
+
+    <div class="header">
+        <h1>Welcome to Sound Marshal</h1>
+    </div>
+
+    <div class="container">
+        <div class="main-content">
+            {% if not user.is_authenticated %}
+                <h2>Discover and Connect with Curators</h2>
+                <p>Join our platform to get your music heard by industry professionals. Sign up now and take your music to the next level.</p>
+                <a href="{% url 'account_signup' %}" class="btn-primary">Sign Up</a>
+            {% elif user.profile.is_artist %}
+                <h2>Welcome back, {{ user.profile.name }}!</h2>
+                <p class="custom-message">Ready to submit new tracks? Explore the dashboard and connect with top curators.</p>
+                <a href="{% url 'artist_dashboard' %}" class="btn-primary">Go to Dashboard</a>
+            {% elif user.profile.is_curator %}
+                <h2>Welcome back, {{ user.profile.name }}!</h2>
+                <p class="custom-message">Discover new talent and provide feedback to help artists grow. Head over to your dashboard to see new submissions.</p>
+                <a href="{% url 'curator_dashboard' %}" class="btn-primary">Go to Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

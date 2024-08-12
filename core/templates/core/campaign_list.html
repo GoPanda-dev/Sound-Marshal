@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Campaigns{% endblock %}
+
+{% block content %}
+<h1>Your Campaigns</h1>
+
+<ul>
+    {% for campaign in campaigns %}
+        <li>
+            <strong>{{ campaign.title }}</strong> - {{ campaign.target_genre }}
+            <p>{{ campaign.description }}</p>
+            <p>Created on: {{ campaign.created_at }}</p>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

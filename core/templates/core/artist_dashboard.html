@@ -1,58 +1,165 @@
 {% extends 'base.html' %}
 
+{% block title %}Artist Dashboard{% endblock %}
+
 {% block content %}
-<h1>Artist Dashboard</h1>
+<div class="dashboard-container">
+    <h1 class="dashboard-title">Welcome, {{ user.profile.name }}</h1>
 
-<h2>Your Tracks</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Genre</th>
-            <th>Upload Date</th>
-            <th>Play</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for track in tracks %}
-        <tr>
-            <td>{{ track.title }}</td>
-            <td>{{ track.genre }}</td>
-            <td>{{ track.upload_date }}</td>
-            <td>
-                <a href="#" onclick="playTrack('{{ MEDIA_URL }}{{ track.file }}')">Play {{ track.title }}</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="dashboard-stats">
+        <div class="stat-item">
+            <h2>Total Tracks</h2>
+            <p>{{ tracks.count }}</p>
+        </div>
+        <div class="stat-item">
+            <h2>Total Submissions</h2>
+            <p>{{ submissions.count }}</p>
+        </div>
+        <div class="stat-item">
+            <h2>Wallet Balance</h2>
+            <p>${{ user.profile.tokens }}</p>
+        </div>
+    </div>
 
-<h2>Submissions</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Track</th>
-            <th>Curator</th>
-            <th>Submission Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for submission in submissions %}
-        <tr>
-            <td>{{ submission.track.title }}</td>
-            <td>{{ submission.curator.profile.name }}</td>
-            <td>{{ submission.submission_date }}</td>
-            <td>{{ submission.status }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="dashboard-section">
+        <h2>Upload a New Track</h2>
+        <form method="post" enctype="multipart/form-data" action="{% url 'artist_dashboard' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn-upload">Upload Track</button>
+        </form>
+    </div>
 
-<h2>Upload New Track</h2>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Upload Track</button>
-</form>
+    <div class="dashboard-section">
+        <h2>Your Tracks</h2>
+        <div class="tracks-grid">
+            {% for track in tracks %}
+            <div class="track-item">
+                <h3>{{ track.title }}</h3>
+                <p>Genre: {{ track.genre }}</p>
+                <button class="btn-play" onclick="playTrack('{{ track.file.url }}')">Play</button>
+                <a href="{% url 'submit_track' track.id %}" class="btn-submit">Submit to Curators</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Submissions</h2>
+        <div class="submissions-grid">
+            {% for submission in submissions %}
+            <div class="submission-item">
+                <h3>{{ submission.track.title }}</h3>
+                <p>Submitted to: {{ submission.curator.profile.name }}</p>
+                <p>Status: {{ submission.status }}</p>
+                {% if submission.feedback %}
+                <div>Feedback: {{ submission.feedback }}</div>
+                {% endif %}
+                {% if submission.rating %}
+                <div>Rating: {{ submission.rating }} / 5</div>
+                {% endif %}
+                {% if submission.voice_feedback %}
+                <button class="btn-play" onclick="playTrack('{{ submission.voice_feedback.url }}')">Play Voice Feedback</button>
+                {% endif %}
+                {% if submission.video_feedback %}
+                <a class="btn-watch" href="{{ submission.video_feedback.url }}" target="_blank">Watch Video Feedback</a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Create a New Campaign</h2>
+        <form method="post" action="{% url 'create_campaign' %}">
+            {% csrf_token %}
+            {{ campaign_form.as_p }}
+            <button type="submit" class="btn-create-campaign">Create Campaign</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    .dashboard-title {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .dashboard-stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+    }
+
+    .stat-item {
+        background-color: #28a745;
+        color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        flex: 1;
+        margin: 0 10px;
+    }
+
+    .dashboard-section {
+        margin-bottom: 40px;
+    }
+
+    .tracks-grid, .submissions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .track-item, .submission-item {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .track-item h3, .submission-item h3 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .btn-upload, .btn-submit, .btn-create-campaign, .btn-play, .btn-watch {
+        display: inline-block;
+        background-color: #28a745;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-upload:hover, .btn-submit:hover, .btn-create-campaign:hover, .btn-play:hover, .btn-watch:hover {
+        background-color: #218838;
+    }
+
+    .btn-play {
+        margin-right: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-stats {
+            flex-direction: column;
+        }
+
+        .stat-item {
+            margin-bottom: 20px;
+        }
+    }
+</style>
 {% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Submission: {{ submission.track.title }}{% endblock %}
+
+{% block content %}
+<h1>Submission: {{ submission.track.title }}</h1>
+
+<p><strong>Curator:</strong> {{ submission.curator.profile.name }}</p>
+<p><strong>Status:</strong> {{ submission.status }}</p>
+
+{% if submission.feedback %}
+    <div><strong>Feedback:</strong> {{ submission.feedback }}</div>
+{% endif %}
+{% if submission.rating %}
+    <div><strong>Rating:</strong> {{ submission.rating }} / 5</div>
+{% endif %}
+{% if submission.voice_feedback %}
+    <div><strong>Voice Feedback:</strong> <audio controls src="{{ submission.voice_feedback.url }}"></audio></div>
+{% endif %}
+{% if submission.video_feedback %}
+    <div><strong>Video Feedback:</strong> <video controls src="{{ submission.video_feedback.url }}"></video></div>
+{% endif %}
+{% endblock %}
