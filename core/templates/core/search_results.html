@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+    <div class="search-results-container">
+        <h1>Search Results for "{{ query }}"</h1>
+
+        {% if tracks.exists or profiles.exists %}
+            <div class="search-results-section">
+                <h2>Tracks</h2>
+                <ul class="search-results-list">
+                    {% for track in tracks %}
+                        <li>
+                            <a href="{% url 'track_detail' track.id %}">{{ track.title }}</a> - {{ track.genre }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="search-results-section">
+                <h2>Profiles</h2>
+                <ul class="search-results-list">
+                    {% for profile in profiles %}
+                        <li>
+                            <a href="{% url 'profile_detail' slug=profile.slug %}">{{ profile.name }}</a> - {{ profile.genre }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <p>No results found for "{{ query }}".</p>
+        {% endif %}
+    </div>
+
+    <style>
+        .search-results-container {
+            padding: 20px;
+        }
+
+        .search-results-section {
+            margin-bottom: 20px;
+        }
+
+        .search-results-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .search-results-list li {
+            margin-bottom: 10px;
+        }
+
+        .search-results-list a {
+            color: #28a745;
+            text-decoration: none;
+        }
+
+        .search-results-list a:hover {
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}

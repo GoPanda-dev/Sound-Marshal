@@ -5,11 +5,6 @@
 {% block title %}Sound Marshal{% endblock %}
 
 {% block content %}
-
-<div class="header">
-    <h1>Welcome to Sound Marshal</h1>
-</div>
-
 <div class="container">
     <div class="main-content">
         {% if not user.is_authenticated %}
@@ -94,7 +89,6 @@
     }
 
     .main-content {
-        padding: 40px 0;
         text-align: center;
     }
 

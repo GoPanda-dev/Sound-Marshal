@@ -10,11 +10,36 @@ from .models import Payment, Subscription, Credit
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 from django.contrib import messages
+from django.db.models import Q
 
 load_dotenv()  # Load environment variables from .env file
 
 # Load Stripe API keys
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+def track_detail(request, id):
+    track = get_object_or_404(Track, id=id)
+    return render(request, 'core/track_detail.html', {'track': track})
+
+def search(request):
+    query = request.GET.get('q')
+    if query:
+        tracks = Track.objects.filter(
+            Q(title__icontains=query) | Q(genre__icontains=query) | Q(description__icontains=query)
+        )
+        profiles = Profile.objects.filter(
+            Q(name__icontains=query) | Q(bio__icontains=query) | Q(genre__icontains=query)
+        )
+    else:
+        tracks = Track.objects.none()
+        profiles = Profile.objects.none()
+
+    context = {
+        'query': query,
+        'tracks': tracks,
+        'profiles': profiles,
+    }
+    return render(request, 'core/search_results.html', context)
 
 @login_required
 @csrf_exempt

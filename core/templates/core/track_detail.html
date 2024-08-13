@@ -1,0 +1,13 @@
+<!-- core/templates/core/track_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ track.title }} - Track Details{% endblock %}
+
+{% block content %}
+<h1>{{ track.title }}</h1>
+<p>Genre: {{ track.genre }}</p>
+<audio controls>
+    <source src="{{ track.file.url }}" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+{% endblock %}

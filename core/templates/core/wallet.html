@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}Wallet{% endblock %}
-
 {% block content %}
 <div class="wallet-container">
     <h1>Wallet</h1>
-    <p>Your current balance: {{ balance }} tokens</p>
+    <p>Your current balance: ${{ balance }}</p>
 
     {% if error %}
         <div class="error">
@@ -61,9 +59,9 @@
                         </td>
                         <td>
                             {% if item.transaction_type == 'debit' %}
-                                -{{ item.amount }} tokens
+                                -{{ item.amount }} dollars
                             {% elif item.transaction_type == 'credit' %}
-                                +{{ item.amount }} tokens
+                                +{{ item.amount }} dollars
                             {% else %}
                                 ${{ item.amount }}
                             {% endif %}
