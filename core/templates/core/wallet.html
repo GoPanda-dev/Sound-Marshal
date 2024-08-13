@@ -24,6 +24,11 @@
             <!-- A Stripe Element will be inserted here. -->
         </div>
 
+        <!-- Mobile Payment Buttons -->
+        <div id="payment-request-button">
+            <!-- A Stripe PaymentRequestButton Element will be inserted here. -->
+        </div>
+
         <!-- Used to display form errors. -->
         <div id="card-errors" role="alert"></div>
 
@@ -32,23 +37,45 @@
 
     <!-- Transaction History Section -->
     <h2>Transaction History</h2>
-    {% if payments %}
+    {% if history %}
         <table class="transaction-history">
             <thead>
                 <tr>
                     <th>Date</th>
+                    <th>Type</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Description</th>
                 </tr>
             </thead>
             <tbody>
-                {% for payment in payments %}
+                {% for item in history %}
                     <tr>
-                        <td>{{ payment.date|date:"Y-m-d H:i" }}</td>
-                        <td>${{ payment.amount }}</td>
-                        <td>{{ payment.status }}</td>
-                        <td>{{ payment.description }}</td>
+                        <td>{{ item.date|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if item.transaction_type %}
+                                {{ item.get_transaction_type_display }}
+                            {% else %}
+                                Payment
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.transaction_type == 'debit' %}
+                                -{{ item.amount }} tokens
+                            {% elif item.transaction_type == 'credit' %}
+                                +{{ item.amount }} tokens
+                            {% else %}
+                                ${{ item.amount }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.status %}
+                                {{ item.status }}
+                            {% else %}
+                                Completed
+                            {% endif %}
+                        </td>
+                        <td>{{ item.description }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -85,13 +112,47 @@
             form.submit();
         }
     });
+
+    // Mobile Payment Integration (Apple Pay, Google Pay)
+    const paymentRequest = stripe.paymentRequest({
+        country: 'US',
+        currency: 'usd',
+        total: {
+            label: 'Add Funds',
+            amount: document.getElementById('amount').value * 100, // Amount in cents
+        },
+        requestPayerName: true,
+        requestPayerEmail: true,
+    });
+
+    const prButton = elements.create('paymentRequestButton', {
+        paymentRequest: paymentRequest,
+    });
+
+    // Check if the Payment Request is available
+    paymentRequest.canMakePayment().then((result) => {
+        if (result) {
+            prButton.mount('#payment-request-button');
+        } else {
+            document.getElementById('payment-request-button').style.display = 'none';
+        }
+    });
+
+    // Update total amount when the amount input changes
+    document.getElementById('amount').addEventListener('input', function() {
+        paymentRequest.update({
+            total: {
+                label: 'Add Funds',
+                amount: this.value * 100, // Update amount in cents
+            }
+        });
+    });
 </script>
 
 <style>
     .wallet-container {
         background-color: #fff;
         padding: 20px;
-        border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         margin-bottom: 20px;
     }
@@ -124,7 +185,6 @@
         padding: 12px;
         font-size: 18px;
         border: 2px solid #28a745;
-        border-radius: 5px;
         width: 100%;
         box-sizing: border-box;
         transition: border-color 0.3s ease;
@@ -139,7 +199,6 @@
         padding: 12px;
         font-size: 18px;
         border: 2px solid #28a745;
-        border-radius: 5px;
         background-color: #f9f9f9;
         box-sizing: border-box;
         transition: border-color 0.3s ease;
@@ -153,7 +212,6 @@
     .wallet-container .stripe-button {
         background-color: #28a745;
         color: #fff;
-        border-radius: 5px;
         padding: 15px;
         font-size: 18px;
         cursor: pointer;
@@ -171,6 +229,10 @@
         color: #e74c3c;
         margin-top: 10px;
         font-size: 14px;
+    }
+
+    #payment-request-button {
+        margin-top: 20px;
     }
 
     /* Transaction History Styles */

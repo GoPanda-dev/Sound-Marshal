@@ -6,23 +6,24 @@ body {
     margin: 0;
     padding: 0;
     line-height: 1.6;
+    font-weight: 400;
 }
 
 h1, h2, h3, h4, h5, h6 {
     color: #333;
-    margin: 0 0 15px;
     font-weight: 700;
 }
 
 a {
-    color: #28a745; /* Green color */
+    color: #28a745;
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 a:hover {
-    color: #218838; /* Darker green for hover */
+    color: #218838;
     text-decoration: underline;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
 }
 
 p {
@@ -40,26 +41,10 @@ p {
     padding-bottom: 100px;
 }
 
-/* Responsive Padding */
-@media (min-width: 768px) {
-    .container {
-        padding-left: 10%;
-        padding-right: 10%;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        width: 95%;
-        padding-left: 2.5%;
-        padding-right: 2.5%;
-    }
-}
-
 /* Navigation Styles */
 header nav {
     background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 15px 0;
 }
 
@@ -97,23 +82,6 @@ header nav ul li form button:hover {
     transform: translateY(-2px);
 }
 
-header nav ul li form {
-    margin: 0;
-    padding: 0;
-    display: inline-block;
-}
-
-header nav ul li form button {
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: 600;
-    text-transform: uppercase;
-    background-color: #28a745;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
 /* Dropdown Menu Styles */
 .dropdown {
     position: relative;
@@ -139,15 +107,15 @@ header nav ul li form button {
 }
 
 .dropdown-content {
-    display: none; /* Initially hidden */
+    display: none;
     position: absolute;
     background-color: #fff;
     min-width: 160px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     z-index: 1;
-    overflow: hidden;
     top: 45px;
     right: 0;
+    overflow: hidden;
 }
 
 .dropdown-content a,
@@ -172,7 +140,7 @@ header nav ul li form button {
 }
 
 .dropdown:hover .dropdown-content {
-    display: block; /* Show dropdown on hover */
+    display: block;
 }
 
 /* Buttons */
@@ -246,6 +214,7 @@ footer {
     padding: 30px 0;
     text-align: center;
     margin-top: 30px;
+    border-top: 1px solid #ddd;
 }
 
 footer p {
@@ -286,6 +255,7 @@ footer p {
     }
 }
 
+/* Profile Container */
 .profile-container {
     background-color: #fff;
     padding: 20px;
@@ -319,34 +289,40 @@ audio {
     max-width: 300px;
 }
 
+/* Tables */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 th, td {
-    padding: 10px;
-    border: 1px solid #ddd;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
     text-align: left;
 }
 
 th {
-    background-color: #f4f4f4;
+    background-color: #28a745;
+    color: #fff;
+    text-transform: uppercase;
 }
 
+/* Dashboard */
 .dashboard-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     background-color: #f9f9f9;
-    border-radius: 8px;
 }
 
 .dashboard-title {
     text-align: center;
     color: #333;
     margin-bottom: 20px;
+    font-size: 24px;
 }
 
 .dashboard-stats {
@@ -356,13 +332,30 @@ th {
 }
 
 .stat-item {
-    background-color: #28a745;
-    color: #fff;
-    padding: 20px;
-    border-radius: 8px;
+    background-color: #fff;
+    color: #333;
+    padding: 25px;
     text-align: center;
     flex: 1;
     margin: 0 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-item h3 {
+    font-size: 24px;
+    color: #28a745;
+    margin-bottom: 10px;
+}
+
+.stat-item p {
+    font-size: 24px;
+    color: #666;
+}
+
+.stat-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .dashboard-section {
@@ -378,8 +371,7 @@ th {
 .track-item, .submission-item {
     background-color: #fff;
     border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 8px;
+    padding: 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -393,7 +385,6 @@ th {
     background-color: #28a745;
     color: #fff;
     padding: 10px 20px;
-    border-radius: 8px;
     text-decoration: none;
     font-weight: bold;
     transition: background-color 0.3s ease;
@@ -405,16 +396,6 @@ th {
 
 .btn-play {
     margin-right: 10px;
-}
-
-@media (max-width: 768px) {
-    .dashboard-stats {
-        flex-direction: column;
-    }
-
-    .stat-item {
-        margin-bottom: 20px;
-    }
 }
 
 /* Dark Theme Styles */

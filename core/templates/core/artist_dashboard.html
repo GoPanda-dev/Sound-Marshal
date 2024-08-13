@@ -8,44 +8,51 @@
 
     <div class="dashboard-stats">
         <div class="stat-item">
+            <i class="fas fa-music fa-2x"></i>
             <h2>Total Tracks</h2>
             <p>{{ tracks.count }}</p>
         </div>
         <div class="stat-item">
+            <i class="fas fa-upload fa-2x"></i>
             <h2>Total Submissions</h2>
             <p>{{ submissions.count }}</p>
         </div>
         <div class="stat-item">
+            <i class="fas fa-wallet fa-2x"></i>
             <h2>Wallet Balance</h2>
-            <p>${{ user.profile.tokens }}</p>
+            <p>{{ user.profile.tokens }} Tokens</p>
         </div>
     </div>
 
     <div class="dashboard-section">
-        <h2>Upload a New Track</h2>
+        <h2><i class="fas fa-cloud-upload-alt"></i> Upload a New Track</h2>
         <form method="post" enctype="multipart/form-data" action="{% url 'artist_dashboard' %}">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn-upload">Upload Track</button>
+            <button type="submit" class="btn-upload"><i class="fas fa-upload"></i> Upload Track</button>
         </form>
     </div>
 
     <div class="dashboard-section">
-        <h2>Your Tracks</h2>
+        <h2><i class="fas fa-music"></i> Your Tracks</h2>
         <div class="tracks-grid">
             {% for track in tracks %}
             <div class="track-item">
+                {% if track.cover_image %}
+                <img src="{{ track.cover_image.url }}" alt="{{ track.title }} cover image" class="track-cover">
+                {% endif %}
                 <h3>{{ track.title }}</h3>
+                <p>{{ track.description }}</p>
                 <p>Genre: {{ track.genre }}</p>
-                <button class="btn-play" onclick="playTrack('{{ track.file.url }}')">Play</button>
-                <a href="{% url 'submit_track' track.id %}" class="btn-submit">Submit to Curators</a>
+                <button class="btn-play" onclick="playTrack('{{ track.file.url }}')"><i class="fas fa-play"></i> Play</button>
+                <a href="{% url 'submit_track' track.id %}" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit to Curators</a>
             </div>
             {% endfor %}
         </div>
     </div>
 
     <div class="dashboard-section">
-        <h2>Submissions</h2>
+        <h2><i class="fas fa-share-alt"></i> Submissions</h2>
         <div class="submissions-grid">
             {% for submission in submissions %}
             <div class="submission-item">
@@ -59,10 +66,10 @@
                 <div>Rating: {{ submission.rating }} / 5</div>
                 {% endif %}
                 {% if submission.voice_feedback %}
-                <button class="btn-play" onclick="playTrack('{{ submission.voice_feedback.url }}')">Play Voice Feedback</button>
+                <button class="btn-play" onclick="playTrack('{{ submission.voice_feedback.url }}')"><i class="fas fa-play"></i> Play Voice Feedback</button>
                 {% endif %}
                 {% if submission.video_feedback %}
-                <a class="btn-watch" href="{{ submission.video_feedback.url }}" target="_blank">Watch Video Feedback</a>
+                <a class="btn-watch" href="{{ submission.video_feedback.url }}" target="_blank"><i class="fas fa-video"></i> Watch Video Feedback</a>
                 {% endif %}
             </div>
             {% endfor %}
@@ -70,11 +77,11 @@
     </div>
 
     <div class="dashboard-section">
-        <h2>Create a New Campaign</h2>
+        <h2><i class="fas fa-bullhorn"></i> Create a New Campaign</h2>
         <form method="post" action="{% url 'create_campaign' %}">
             {% csrf_token %}
             {{ campaign_form.as_p }}
-            <button type="submit" class="btn-create-campaign">Create Campaign</button>
+            <button type="submit" class="btn-create-campaign"><i class="fas fa-bullhorn"></i> Create Campaign</button>
         </form>
     </div>
 </div>
@@ -85,7 +92,8 @@
         margin: 0 auto;
         padding: 20px;
         background-color: #f9f9f9;
-        border-radius: 8px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .dashboard-title {
@@ -101,13 +109,20 @@
     }
 
     .stat-item {
-        background-color: #28a745;
-        color: #fff;
+        background-color: #fff;
+        color: #333;
         padding: 20px;
-        border-radius: 8px;
+        border-radius: 12px;
         text-align: center;
         flex: 1;
         margin: 0 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
     }
 
     .dashboard-section {
@@ -124,8 +139,16 @@
         background-color: #fff;
         border: 1px solid #ddd;
         padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .track-cover {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        margin-bottom: 15px;
     }
 
     .track-item h3, .submission-item h3 {
@@ -141,25 +164,13 @@
         border-radius: 8px;
         text-decoration: none;
         font-weight: bold;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        margin-top: 10px;
     }
 
     .btn-upload:hover, .btn-submit:hover, .btn-create-campaign:hover, .btn-play:hover, .btn-watch:hover {
         background-color: #218838;
-    }
-
-    .btn-play {
-        margin-right: 10px;
-    }
-
-    @media (max-width: 768px) {
-        .dashboard-stats {
-            flex-direction: column;
-        }
-
-        .stat-item {
-            margin-bottom: 20px;
-        }
+        transform: translateY(-5px);
     }
 </style>
 {% endblock %}

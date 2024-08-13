@@ -1,13 +1,15 @@
+from itertools import chain
 import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import ProfileForm, UserForm, TrackForm, FeedbackForm, SubmissionForm, CampaignForm
-from .models import Profile, Track, Submission, Campaign, User
+from .models import Profile, Track, Submission, Campaign, Transaction, User
 import stripe
 from django.conf import settings
 from .models import Payment, Subscription, Credit
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
+from django.contrib import messages
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -97,12 +99,16 @@ def manage_subscription(request):
 @login_required
 def wallet(request):
     payments = Payment.objects.filter(user=request.user).order_by('-date')
+    transactions = Transaction.objects.filter(user=request.user).order_by('-date')
+
+    # Combine payments and transactions and sort by date
+    history = sorted(chain(payments, transactions), key=lambda x: x.date, reverse=True)
+
     return render(request, 'core/wallet.html', {
         'balance': request.user.profile.tokens,
-        'payments': payments,
+        'history': history,
         'stripe_public_key': settings.STRIPE_PUBLIC_KEY
     })
-
 
 @login_required
 def submit_track(request, track_id):
@@ -114,16 +120,44 @@ def submit_track(request, track_id):
         curator_id = request.POST.get('curator_id')
         curator = get_object_or_404(User, id=curator_id)
 
-        if form.is_valid():
-            submission = form.save(commit=False)
-            submission.track = track
-            submission.curator = curator
-            submission.save()
-            return redirect('artist_dashboard')
+        # Check if the artist has enough tokens
+        if request.user.profile.tokens > 0:
+            if form.is_valid():
+                submission = form.save(commit=False)
+                submission.track = track
+                submission.curator = curator
+                submission.save()
+
+                # Deduct a token from the artist's profile
+                request.user.profile.tokens -= 1
+                request.user.profile.save()
+
+                # Log the transaction
+                Transaction.objects.create(
+                    user=request.user,
+                    transaction_type='debit',
+                    amount=1,
+                    description=f"Submission of {track.title} to {curator.profile.name}"
+                )
+
+                return redirect('artist_dashboard')
+        else:
+            form.add_error(None, 'You do not have enough tokens to submit this track.')
+
     else:
         form = SubmissionForm()
 
     return render(request, 'core/submit_track.html', {'track': track, 'form': form, 'curators': curators})
+
+def upload_track(request):
+    if request.method == 'POST':
+        form = TrackForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('artist_dashboard')
+    else:
+        form = TrackForm()
+    return render(request, 'upload_track.html', {'form': form})
 
 @login_required
 def artist_dashboard(request):
@@ -203,21 +237,22 @@ def provide_feedback(request, submission_id):
     if request.method == 'POST':
         form = FeedbackForm(request.POST, request.FILES, instance=submission)
         if form.is_valid():
-            form.save()
-            return redirect('curator_dashboard')
+            submission = form.save(commit=False)  # Save the form but don't commit to the database yet
+            submission.status = 'reviewed'  # Update the status to 'reviewed'
+            submission.save()  # Save the updated submission to the database
+            return redirect('curator_dashboard')  # Redirect to the dashboard or any other page
     else:
         form = FeedbackForm(instance=submission)
 
-    return render(request, 'core/provide_feedback.html', {'form': form, 'submission': submission})
+    return render(request, 'provide_feedback.html', {'form': form, 'submission': submission})
 
 @login_required
 def campaign_overview(request):
     campaigns = Campaign.objects.filter(artist=request.user)
     return render(request, 'core/campaign_overview.html', {'campaigns': campaigns})
 
-@login_required
-def profile_detail(request, pk):
-    profile = get_object_or_404(Profile, pk=pk)
+def profile_detail(request, slug):
+    profile = get_object_or_404(Profile, slug=slug)
     return render(request, 'core/profile_detail.html', {'profile': profile})
 
 @login_required
@@ -227,14 +262,19 @@ def account_settings(request):
 
     if request.method == 'POST':
         user_form = UserForm(request.POST, instance=user)
-        profile_form = ProfileForm(request.POST, instance=profile)
+        profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
+
+        # Debugging: Print form errors if not valid
+        if not user_form.is_valid():
+            print("User Form Errors:", user_form.errors)
+        if not profile_form.is_valid():
+            print("Profile Form Errors:", profile_form.errors)
 
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
-            profile = profile_form.save(commit=False)
-            profile.role_selected = True  # Mark that the user has selected a role
-            profile.save()
-            return redirect('account_settings')
+            profile_form.save()
+            messages.success(request, "Your account settings have been updated.")
+            return redirect('profile_detail', slug=profile.slug)
 
     else:
         user_form = UserForm(instance=user)
@@ -309,12 +349,43 @@ def create_campaign(request):
         if form.is_valid():
             campaign = form.save(commit=False)
             campaign.artist = request.user
-            campaign.save()
-            return redirect('artist_dashboard')
+            selected_tracks = form.cleaned_data['tracks']
+            targeted_curators = form.cleaned_data['curators_targeted']
+            total_submissions = len(selected_tracks) * len(targeted_curators)
+
+            # Check if the artist has enough tokens
+            if request.user.profile.tokens >= total_submissions:
+                campaign.save()
+                form.save_m2m()  # Save the many-to-many data for tracks and curators_targeted
+
+                # Create submissions and deduct tokens
+                for curator in campaign.curators_targeted.all():
+                    for track in campaign.tracks.all():
+                        Submission.objects.create(
+                            track=track,
+                            curator=curator,
+                            campaign=campaign
+                        )
+                        request.user.profile.tokens -= 1
+                        request.user.profile.save()
+
+                        # Log the transaction
+                        Transaction.objects.create(
+                            user=request.user,
+                            transaction_type='debit',
+                            amount=1,
+                            description=f"Submission of {track.title} to {curator.profile.name} in campaign {campaign.title}"
+                        )
+
+                return redirect('artist_dashboard')
+            else:
+                form.add_error(None, f'You do not have enough tokens to create this campaign. You need {total_submissions} tokens.')
+
     else:
         form = CampaignForm()
 
     return render(request, 'core/create_campaign.html', {'form': form})
+
 
 def home(request):
     recommended_curators = []

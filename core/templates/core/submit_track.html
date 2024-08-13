@@ -5,6 +5,12 @@
 {% block content %}
 <h1>Submit Track: {{ track.title }}</h1>
 
+{% if error %}
+    <div class="error-message">
+        {{ error }}
+    </div>
+{% endif %}
+
 <form method="post">
     {% csrf_token %}
     <label for="curator_id">Choose a Curator:</label>

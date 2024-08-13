@@ -1,6 +1,12 @@
 from django.contrib import admin
-from .models import Payment, Subscription, Credit, Profile, Track, Campaign, Submission
+from .models import Transaction, Payment, Subscription, Credit, Profile, Track, Campaign, Submission
 
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'transaction_type', 'amount', 'description', 'date')
+    list_filter = ('transaction_type', 'date')
+    search_fields = ('user__username', 'description')
+    
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('user', 'amount', 'status', 'date', 'description')

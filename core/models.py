@@ -5,12 +5,29 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.html import strip_tags
 from django.conf import settings
+from django.utils.text import slugify
 
 import stripe
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+class Transaction(models.Model):
+    TRANSACTION_TYPES = (
+        ('credit', 'Credit'),
+        ('debit', 'Debit'),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=6, choices=TRANSACTION_TYPES)
+    amount = models.IntegerField()  # Number of tokens
+    description = models.CharField(max_length=255)
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.transaction_type} of {self.amount} tokens on {self.date}"
 
 class Payment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -59,6 +76,11 @@ class Profile(models.Model):
     name = models.CharField(max_length=255)
     bio = models.TextField(blank=True, null=True)
     genre = models.CharField(max_length=100, default='None')
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
+
+    # Profile images
+    profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    cover_image = models.ImageField(upload_to='cover_images/', blank=True, null=True)
 
     # Social Media Links
     facebook_link = models.URLField(max_length=200, blank=True, null=True)
@@ -76,6 +98,9 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.role}"
+    
+    def get_absolute_url(self):
+        return reverse('profile_detail', kwargs={'slug': self.slug})
 
     @property
     def is_artist(self):
@@ -89,6 +114,8 @@ class Track(models.Model):
     artist = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     genre = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)  # New field for track description
+    cover_image = models.ImageField(upload_to='track_covers/', blank=True, null=True)  # New field for cover image
     file = models.FileField(upload_to='tracks/')
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -102,23 +129,33 @@ class Campaign(models.Model):
     target_genre = models.CharField(max_length=100)
     budget = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     curators_targeted = models.ManyToManyField(User, related_name='targeted_campaigns')
+    tracks = models.ManyToManyField(Track, related_name='campaigns')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        self.create_submissions()
-
     def create_submissions(self):
-        curators = match_curators(self)
+        curators = self.curators_targeted.all()
+        tracks = self.tracks.all()
+
         for curator in curators:
-            Submission.objects.create(
-                track=self.track,
-                curator=curator,
-                campaign=self
-            )
+            for track in tracks:
+                Submission.objects.create(
+                    track=track,
+                    curator=curator,
+                    campaign=self
+                )
+                # Deduct a token from the artist's profile
+                self.artist.profile.tokens -= 1
+                self.artist.profile.save()
+
+                # Ensure that the artist does not have negative tokens
+                if self.artist.profile.tokens < 0:
+                    self.artist.profile.tokens = 0
+                    self.artist.profile.save()
+                    # You might want to raise an error or handle the situation if tokens run out
+                    raise ValueError("Not enough tokens to create more submissions.")
 
 
 class Submission(models.Model):

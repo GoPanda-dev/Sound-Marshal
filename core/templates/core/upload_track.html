@@ -1,0 +1,40 @@
+<div class="track-details">
+    <h2>{{ track.title }}</h2>
+    {% if track.cover_image %}
+        <img src="{{ track.cover_image.url }}" alt="{{ track.title }} cover image" class="track-cover">
+    {% endif %}
+    <p>{{ track.description }}</p>
+    <p>Genre: {{ track.genre }}</p>
+    <audio controls>
+        <source src="{{ track.file.url }}" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+</div>
+<style>
+    .track-details {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+    
+    .track-cover {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .track-details h2 {
+        font-size: 24px;
+        color: #333;
+    }
+    
+    .track-details p {
+        font-size: 16px;
+        color: #555;
+    }
+    
+</style>

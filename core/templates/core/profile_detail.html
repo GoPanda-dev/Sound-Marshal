@@ -1,47 +1,244 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block title %}My Profile{% endblock %}
 
 {% block content %}
-<!-- core/profile_detail.html -->
 <div class="profile-container">
-    <h2>{{ profile.name }}</h2>
-    <p>{{ profile.bio }}</p>
-    <p>Genre: {{ profile.genre }}</p>
-    <div class="social-media-links">
-        {% if profile.facebook_link %}
-            <p>Facebook: <a href="{{ profile.facebook_link }}" target="_blank">{{ profile.facebook_link }}</a></p>
-        {% endif %}
-        {% if profile.youtube_link %}
-            <p>YouTube: <a href="{{ profile.youtube_link }}" target="_blank">{{ profile.youtube_link }}</a></p>
-        {% endif %}
-        {% if profile.whatsapp_link %}
-            <p>WhatsApp: <a href="{{ profile.whatsapp_link }}" target="_blank">{{ profile.whatsapp_link }}</a></p>
-        {% endif %}
-        {% if profile.instagram_link %}
-            <p>Instagram: <a href="{{ profile.instagram_link }}" target="_blank">{{ profile.instagram_link }}</a></p>
-        {% endif %}
-        {% if profile.tiktok_link %}
-            <p>TikTok: <a href="{{ profile.tiktok_link }}" target="_blank">{{ profile.tiktok_link }}</a></p>
-        {% endif %}
-        {% if profile.wechat_link %}
-            <p>WeChat: <a href="{{ profile.wechat_link }}" target="_blank">{{ profile.wechat_link }}</a></p>
-        {% endif %}
-        {% if profile.messenger_link %}
-            <p>Messenger: <a href="{{ profile.messenger_link }}" target="_blank">{{ profile.messenger_link }}</a></p>
-        {% endif %}
-        {% if profile.telegram_link %}
-            <p>Telegram: <a href="{{ profile.telegram_link }}" target="_blank">{{ profile.telegram_link }}</a></p>
-        {% endif %}
-        {% if profile.viber_link %}
-            <p>Viber: <a href="{{ profile.viber_link }}" target="_blank">{{ profile.viber_link }}</a></p>
-        {% endif %}
-        {% if profile.snapchat_link %}
-            <p>Snapchat: <a href="{{ profile.snapchat_link }}" target="_blank">{{ profile.snapchat_link }}</a></p>
-        {% endif %}
+    {% if profile.cover_image %}
+        <div class="cover-image" style="background-image: url('{{ profile.cover_image.url }}');"></div>
+    {% else %}
+        <div class="cover-image default-cover">Your Cover Image Here</div>
+    {% endif %}
+    
+    <div class="profile-details">
+        <div class="profile-image-container">
+            {% if profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }}" class="profile-image">
+            {% else %}
+                <div class="default-profile-icon"><i class="fas fa-user"></i></div>
+            {% endif %}
+        </div>
+        <h2 class="profile-name">{{ profile.name }}</h2>
+        <p class="profile-bio">{{ profile.bio }}</p>
+        <p class="profile-genre">Genre: {{ profile.genre }}</p>
     </div>
     
+    <div class="social-media-links">
+        {% if profile.facebook_link %}
+            <a href="{{ profile.facebook_link }}" target="_blank" class="social-icon fab fa-facebook-f"></a>
+        {% endif %}
+        {% if profile.youtube_link %}
+            <a href="{{ profile.youtube_link }}" target="_blank" class="social-icon fab fa-youtube"></a>
+        {% endif %}
+        {% if profile.whatsapp_link %}
+            <a href="{{ profile.whatsapp_link }}" target="_blank" class="social-icon fab fa-whatsapp"></a>
+        {% endif %}
+        {% if profile.instagram_link %}
+            <a href="{{ profile.instagram_link }}" target="_blank" class="social-icon fab fa-instagram"></a>
+        {% endif %}
+        {% if profile.tiktok_link %}
+            <a href="{{ profile.tiktok_link }}" target="_blank" class="social-icon fab fa-tiktok"></a>
+        {% endif %}
+        {% if profile.wechat_link %}
+            <a href="{{ profile.wechat_link }}" target="_blank" class="social-icon fab fa-weixin"></a>
+        {% endif %}
+        {% if profile.messenger_link %}
+            <a href="{{ profile.messenger_link }}" target="_blank" class="social-icon fab fa-facebook-messenger"></a>
+        {% endif %}
+        {% if profile.telegram_link %}
+            <a href="{{ profile.telegram_link }}" target="_blank" class="social-icon fab fa-telegram-plane"></a>
+        {% endif %}
+        {% if profile.viber_link %}
+            <a href="{{ profile.viber_link }}" target="_blank" class="social-icon fab fa-viber"></a>
+        {% endif %}
+        {% if profile.snapchat_link %}
+            <a href="{{ profile.snapchat_link }}" target="_blank" class="social-icon fab fa-snapchat-ghost"></a>
+        {% endif %}
+    </div>
+
+    {% if profile.user.track_set.exists %}
+    <div class="tracks-section">
+        <h3 class="tracks-title">My Tracks</h3>
+        <div class="tracks-grid">
+            {% for track in profile.user.track_set.all %}
+            <div class="track-item">
+                {% if track.cover_image %}
+                <img src="{{ track.cover_image.url }}" alt="{{ track.title }} cover image" class="track-cover">
+                {% endif %}
+                <h4>{{ track.title }}</h4>
+                <p>{{ track.description }}</p>
+                <p>Genre: {{ track.genre }}</p>
+                <button class="btn-play" onclick="playTrack('{{ track.file.url }}')"><i class="fas fa-play"></i> Play</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    </div>
 </div>
 
+<style>
+    .profile-container {
+        max-width: 80%;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
+    .cover-image {
+        width: 100%;
+        height: 300px;
+        background-size: cover;
+        background-position: center;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .default-cover {
+        background-color: #ddd;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #aaa;
+        font-size: 24px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .profile-details {
+        text-align: center;
+        margin-top: -80px;
+    }
+
+    .profile-image-container {
+        display: inline-block;
+        padding: 8px;
+        background-color: #fff;
+        border-radius: 50%;
+    }
+
+    .profile-image {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .profile-name {
+        font-size: 32px;
+        font-weight: bold;
+        margin-top: 15px;
+        color: #333;
+    }
+
+    .profile-bio {
+        font-size: 16px;
+        margin-top: 10px;
+        color: #555;
+    }
+
+    .profile-genre {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 10px;
+        color: #28a745;
+    }
+
+    .social-media-links {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .social-icon {
+        font-size: 24px;
+        color: #555;
+        margin: 0 10px;
+        transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .social-icon:hover {
+        color: #28a745;
+        transform: translateY(-5px);
+    }
+
+    .default-profile-icon {
+        font-size: 150px;
+        color: #ccc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background-color: #f9f9f9;
+        margin: 0 auto;
+    }
+
+    .tracks-section {
+        margin-top: 40px;
+    }
+
+    .tracks-title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .tracks-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    .track-item {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .track-cover {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+    .track-item h4 {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .track-item p {
+        font-size: 16px;
+        color: #555;
+        margin-bottom: 10px;
+    }
+
+    .btn-play {
+        display: inline-block;
+        background-color: #28a745;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .btn-play:hover {
+        background-color: #218838;
+        transform: translateY(-5px);
+    }
+</style>
 {% endblock %}

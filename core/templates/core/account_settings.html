@@ -4,14 +4,109 @@
 
 {% block content %}
 <h2>Account Settings</h2>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <h3>Account Information</h3>
     {{ user_form.as_p }}
 
     <h3>Profile Information</h3>
-    {{ profile_form.as_p }}
+    {{ profile_form.name.label_tag }} {{ profile_form.name }}
+    {{ profile_form.bio.label_tag }} {{ profile_form.bio }}
+    {{ profile_form.genre.label_tag }} {{ profile_form.genre }}
+    
+    <p>
+        <label for="id_slug">Profile URL:</label>
+        {{ profile_form.slug }}
+        <small>Your custom profile URL. Example: yourname</small>
+    </p>
+
+    <h3>Profile Images</h3>
+    <div class="image-upload">
+        <div>
+            {{ profile_form.profile_image.label_tag }} {{ profile_form.profile_image }}
+        </div>
+        <div>
+            {{ profile_form.cover_image.label_tag }} {{ profile_form.cover_image }}
+        </div>
+    </div>
+
+    <h3>Social Media Links</h3>
+    <div class="social-media-grid">
+        <div>{{ profile_form.facebook_link.label_tag }} {{ profile_form.facebook_link }}</div>
+        <div>{{ profile_form.youtube_link.label_tag }} {{ profile_form.youtube_link }}</div>
+        <div>{{ profile_form.whatsapp_link.label_tag }} {{ profile_form.whatsapp_link }}</div>
+        <div>{{ profile_form.instagram_link.label_tag }} {{ profile_form.instagram_link }}</div>
+        <div>{{ profile_form.tiktok_link.label_tag }} {{ profile_form.tiktok_link }}</div>
+        <div>{{ profile_form.wechat_link.label_tag }} {{ profile_form.wechat_link }}</div>
+        <div>{{ profile_form.messenger_link.label_tag }} {{ profile_form.messenger_link }}</div>
+        <div>{{ profile_form.telegram_link.label_tag }} {{ profile_form.telegram_link }}</div>
+        <div>{{ profile_form.viber_link.label_tag }} {{ profile_form.viber_link }}</div>
+        <div>{{ profile_form.snapchat_link.label_tag }} {{ profile_form.snapchat_link }}</div>
+    </div>
 
     <button type="submit" class="btn">Save Changes</button>
 </form>
+
+<style>
+    .social-media-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .social-media-grid div {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .social-media-grid label {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .social-media-grid input {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .social-media-grid input:focus {
+        border-color: #28a745;
+        outline: none;
+    }
+
+    .image-upload {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .image-upload div {
+        flex: 1;
+    }
+    
+    .image-upload label {
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .image-upload input {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .image-upload input:focus {
+        border-color: #28a745;
+        outline: none;
+    }
+</style>
 {% endblock %}

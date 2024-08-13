@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block title %}Sound Marshal{% endblock %}
 
 {% block content %}
@@ -26,7 +28,7 @@
                     <li>
                         <h4>{{ curator.profile.name }}</h4>
                         <p>Genre: {{ curator.profile.genre }}</p>
-                        <a href="{% url 'profile_detail' curator.profile.pk %}" class="btn btn-view-profile">View Profile</a>
+                        <a href="{% url 'profile_detail' slug=curator.profile.slug %}" class="btn btn-view-profile">View Profile</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -42,7 +44,7 @@
                     <li>
                         <h4>{{ artist.profile.name }}</h4>
                         <p>Genre: {{ artist.profile.genre }}</p>
-                        <a href="{% url 'profile_detail' artist.profile.pk %}" class="btn btn-view-profile">View Profile</a>
+                        <a href="{% url 'profile_detail' slug=artist.profile.slug %}" class="btn btn-view-profile">View Profile</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -76,17 +78,74 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <style>
+    .header {
+        background-color: #28a745;
+        color: #fff;
+        padding: 40px 0;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+        font-size: 48px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .main-content {
+        padding: 40px 0;
+        text-align: center;
+    }
+
+    .main-content h2 {
+        color: #28a745;
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+
+    .main-content p {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 30px;
+    }
+
+    .btn-primary {
+        background-color: #28a745;
+        color: #fff;
+        padding: 15px 30px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 18px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+    }
+
     .recommendations-list {
         list-style-type: none;
         padding: 0;
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 15px;
     }
 
     .recommendations-list li {
         background-color: #f9f9f9;
         border: 1px solid #ddd;
         padding: 15px;
-        margin-bottom: 15px;
         border-radius: 8px;
+        width: 30%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .recommendations-list li:hover {
+        transform: translateY(-5px);
     }
 
     .recommendations-list h4 {
@@ -98,9 +157,11 @@
         background-color: #28a745;
         color: #fff;
         padding: 8px 16px;
-        border-radius: 5px;
+        border-radius: 8px;
         text-decoration: none;
         transition: background-color 0.3s ease;
+        display: inline-block;
+        margin-top: 10px;
     }
 
     .btn-view-profile:hover {
@@ -109,7 +170,6 @@
 
     .how-it-works {
         margin-top: 40px;
-        text-align: center;
     }
 
     .how-it-works h2 {
@@ -130,9 +190,15 @@
         padding: 20px;
         background-color: #f9f9f9;
         border: 1px solid #ddd;
-        border-radius: 8px;
         margin: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+    .step:hover {
+        transform: translateY(-5px);
     }
 
     .step i {
@@ -143,10 +209,12 @@
     .step h3 {
         color: #28a745;
         margin-bottom: 10px;
+        font-size: 20px;
     }
 
     .step p {
         color: #555;
+        font-size: 16px;
     }
 </style>
 
