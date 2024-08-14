@@ -1,152 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="wallet-container">
-    <h1>Wallet</h1>
-    <p>Your current balance: ${{ balance }}</p>
-
-    {% if error %}
-        <div class="error">
-            <p>{{ error }}</p>
-        </div>
-    {% endif %}
-
-    <h2>Add Funds</h2>
-    <form id="payment-form" method="post" action="{% url 'purchase_credits' %}">
-        {% csrf_token %}
-        <label for="amount">Amount (USD):</label>
-        <input type="number" id="amount" name="amount" min="1" required>
-
-        <!-- Stripe Card Element -->
-        <div id="card-element">
-            <!-- A Stripe Element will be inserted here. -->
-        </div>
-
-        <!-- Mobile Payment Buttons -->
-        <div id="payment-request-button">
-            <!-- A Stripe PaymentRequestButton Element will be inserted here. -->
-        </div>
-
-        <!-- Used to display form errors. -->
-        <div id="card-errors" role="alert"></div>
-
-        <button type="submit" class="stripe-button">Add Funds</button>
-    </form>
-
-    <!-- Transaction History Section -->
-    <h2>Transaction History</h2>
-    {% if history %}
-        <table class="transaction-history">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in history %}
-                    <tr>
-                        <td>{{ item.date|date:"Y-m-d H:i" }}</td>
-                        <td>
-                            {% if item.transaction_type %}
-                                {{ item.get_transaction_type_display }}
-                            {% else %}
-                                Payment
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if item.transaction_type == 'debit' %}
-                                -{{ item.amount }} dollars
-                            {% elif item.transaction_type == 'credit' %}
-                                +{{ item.amount }} dollars
-                            {% else %}
-                                ${{ item.amount }}
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if item.status %}
-                                {{ item.status }}
-                            {% else %}
-                                Completed
-                            {% endif %}
-                        </td>
-                        <td>{{ item.description }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No transactions yet.</p>
-    {% endif %}
-</div>
-
-<script src="https://js.stripe.com/v3/"></script>
-<script>
-    const stripe = Stripe('{{ stripe_public_key }}');
-    const elements = stripe.elements();
-    const cardElement = elements.create('card');
-    cardElement.mount('#card-element');
-
-    const form = document.getElementById('payment-form');
-
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const { token, error } = await stripe.createToken(cardElement);
-
-        if (error) {
-            const errorElement = document.getElementById('card-errors');
-            errorElement.textContent = error.message;
-        } else {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.setAttribute('type', 'hidden');
-            hiddenInput.setAttribute('name', 'stripeToken');
-            hiddenInput.setAttribute('value', token.id);
-            form.appendChild(hiddenInput);
-
-            form.submit();
-        }
-    });
-
-    // Mobile Payment Integration (Apple Pay, Google Pay)
-    const paymentRequest = stripe.paymentRequest({
-        country: 'US',
-        currency: 'usd',
-        total: {
-            label: 'Add Funds',
-            amount: document.getElementById('amount').value * 100, // Amount in cents
-        },
-        requestPayerName: true,
-        requestPayerEmail: true,
-    });
-
-    const prButton = elements.create('paymentRequestButton', {
-        paymentRequest: paymentRequest,
-    });
-
-    // Check if the Payment Request is available
-    paymentRequest.canMakePayment().then((result) => {
-        if (result) {
-            prButton.mount('#payment-request-button');
-        } else {
-            document.getElementById('payment-request-button').style.display = 'none';
-        }
-    });
-
-    // Update total amount when the amount input changes
-    document.getElementById('amount').addEventListener('input', function() {
-        paymentRequest.update({
-            total: {
-                label: 'Add Funds',
-                amount: this.value * 100, // Update amount in cents
-            }
-        });
-    });
-</script>
-
 <style>
     .wallet-container {
         background-color: #fff;
@@ -251,4 +105,149 @@
         color: #fff;
     }
 </style>
+<div class="wallet-container">
+    <h1>Wallet</h1>
+    <p>Your current balance: ${{ balance }}</p>
+
+    {% if error %}
+        <div class="error">
+            <p>{{ error }}</p>
+        </div>
+    {% endif %}
+
+    <h2>Add Funds</h2>
+    <form id="payment-form" method="post" action="{% url 'purchase_credits' %}">
+        {% csrf_token %}
+        <label for="amount">Amount (USD):</label>
+        <input type="number" id="amount" name="amount" min="1" required>
+
+        <!-- Stripe Card Element -->
+        <div id="card-element">
+            <!-- A Stripe Element will be inserted here. -->
+        </div>
+
+        <!-- Mobile Payment Buttons -->
+        <div id="payment-request-button">
+            <!-- A Stripe PaymentRequestButton Element will be inserted here. -->
+        </div>
+
+        <!-- Used to display form errors. -->
+        <div id="card-errors" role="alert"></div>
+
+        <button type="submit" class="stripe-button">Add Funds</button>
+    </form>
+
+    <!-- Transaction History Section -->
+    <h2>Transaction History</h2>
+    {% if history %}
+        <table class="transaction-history">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in history %}
+                    <tr>
+                        <td>{{ item.date|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            {% if item.transaction_type %}
+                                {{ item.get_transaction_type_display }}
+                            {% else %}
+                                Credit
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.transaction_type == 'debit' %}
+                                -${{ item.amount }}
+                            {% elif item.transaction_type == 'credit' %}
+                                +${{ item.amount }}
+                            {% else %}
+                                ${{ item.amount }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.status %}
+                                {{ item.status }}
+                            {% else %}
+                                Completed
+                            {% endif %}
+                        </td>
+                        <td>{{ item.description }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No transactions yet.</p>
+    {% endif %}
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    const stripe = Stripe('{{ stripe_public_key }}');
+    const elements = stripe.elements();
+    const cardElement = elements.create('card');
+    cardElement.mount('#card-element');
+
+    const form = document.getElementById('payment-form');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const { token, error } = await stripe.createToken(cardElement);
+
+        if (error) {
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = error.message;
+        } else {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'stripeToken');
+            hiddenInput.setAttribute('value', token.id);
+            form.appendChild(hiddenInput);
+
+            form.submit();
+        }
+    });
+
+    // Mobile Payment Integration (Apple Pay, Google Pay)
+    const paymentRequest = stripe.paymentRequest({
+        country: 'US',
+        currency: 'usd',
+        total: {
+            label: 'Add Funds',
+            amount: document.getElementById('amount').value * 100, // Amount in cents
+        },
+        requestPayerName: true,
+        requestPayerEmail: true,
+    });
+
+    const prButton = elements.create('paymentRequestButton', {
+        paymentRequest: paymentRequest,
+    });
+
+    // Check if the Payment Request is available
+    paymentRequest.canMakePayment().then((result) => {
+        if (result) {
+            prButton.mount('#payment-request-button');
+        } else {
+            document.getElementById('payment-request-button').style.display = 'none';
+        }
+    });
+
+    // Update total amount when the amount input changes
+    document.getElementById('amount').addEventListener('input', function() {
+        paymentRequest.update({
+            total: {
+                label: 'Add Funds',
+                amount: this.value * 100, // Update amount in cents
+            }
+        });
+    });
+</script>
 {% endblock %}

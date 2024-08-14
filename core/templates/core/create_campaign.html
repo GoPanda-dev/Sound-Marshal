@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <h1>Create a New Campaign</h1>
-    <form method="post">
+    <form method="post" data-no-ajax="true">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn-primary">Create Campaign</button>

@@ -21,41 +21,95 @@
             {% endif %}
         </div>
         <h2 class="profile-name">{{ profile.name }}</h2>
+
+        <div class="streaming-links">
+            {% if profile.spotify_link %}
+                <a href="{{ profile.spotify_link }}" target="_blank" class="streaming-link">
+                    <i class="fab fa-spotify"></i> Spotify
+                </a>
+            {% endif %}
+            {% if profile.apple_music_link %}
+                <a href="{{ profile.apple_music_link }}" target="_blank" class="streaming-link">
+                    <i class="fab fa-apple"></i> Apple Music
+                </a>
+            {% endif %}
+            {% if profile.amazon_music_link %}
+                <a href="{{ profile.amazon_music_link }}" target="_blank" class="streaming-link">
+                    <i class="fab fa-amazon"></i> Amazon Music
+                </a>
+            {% endif %}
+            {% if profile.youtube_music_link %}
+                <a href="{{ profile.youtube_music_link }}" target="_blank" class="streaming-link">
+                    <i class="fab fa-youtube"></i> YouTube Music
+                </a>
+            {% endif %}
+            {% if profile.deezer_link %}
+                <a href="{{ profile.deezer_link }}" target="_blank" class="streaming-link">
+                    <i class="fab fa-deezer"></i> Deezer
+                </a>
+            {% endif %}
+            {% if profile.tidal_link %}
+                <a href="{{ profile.tidal_link }}" target="_blank" class="streaming-link">
+                    <i class="fab fa-tidal"></i> Tidal
+                </a>
+            {% endif %}
+            {% if profile.soundcloud_link %}
+                <a href="{{ profile.soundcloud_link }}" target="_blank" class="streaming-link">
+                    <i class="fab fa-soundcloud"></i> SoundCloud
+                </a>
+            {% endif %}
+            {% if profile.pandora_link %}
+                <a href="{{ profile.pandora_link }}" target="_blank" class="streaming-link">
+                    <i class="fab fa-pandora"></i> Pandora
+                </a>
+            {% endif %}
+            {% if profile.audiomack_link %}
+                <a href="{{ profile.audiomack_link }}" target="_blank" class="streaming-link">
+                    <i class="fas fa-music"></i> Audiomack
+                </a>
+            {% endif %}
+            {% if profile.napster_link %}
+                <a href="{{ profile.napster_link }}" target="_blank" class="streaming-link">
+                    <i class="fas fa-music"></i> Napster
+                </a>
+            {% endif %}
+        </div>    
+        
+        <div class="social-media-links">
+            {% if profile.facebook_link %}
+                <a href="{{ profile.facebook_link }}" target="_blank" class="social-icon fab fa-facebook-f"></a>
+            {% endif %}
+            {% if profile.youtube_link %}
+                <a href="{{ profile.youtube_link }}" target="_blank" class="social-icon fab fa-youtube"></a>
+            {% endif %}
+            {% if profile.whatsapp_link %}
+                <a href="{{ profile.whatsapp_link }}" target="_blank" class="social-icon fab fa-whatsapp"></a>
+            {% endif %}
+            {% if profile.instagram_link %}
+                <a href="{{ profile.instagram_link }}" target="_blank" class="social-icon fab fa-instagram"></a>
+            {% endif %}
+            {% if profile.tiktok_link %}
+                <a href="{{ profile.tiktok_link }}" target="_blank" class="social-icon fab fa-tiktok"></a>
+            {% endif %}
+            {% if profile.wechat_link %}
+                <a href="{{ profile.wechat_link }}" target="_blank" class="social-icon fab fa-weixin"></a>
+            {% endif %}
+            {% if profile.messenger_link %}
+                <a href="{{ profile.messenger_link }}" target="_blank" class="social-icon fab fa-facebook-messenger"></a>
+            {% endif %}
+            {% if profile.telegram_link %}
+                <a href="{{ profile.telegram_link }}" target="_blank" class="social-icon fab fa-telegram-plane"></a>
+            {% endif %}
+            {% if profile.viber_link %}
+                <a href="{{ profile.viber_link }}" target="_blank" class="social-icon fab fa-viber"></a>
+            {% endif %}
+            {% if profile.snapchat_link %}
+                <a href="{{ profile.snapchat_link }}" target="_blank" class="social-icon fab fa-snapchat-ghost"></a>
+            {% endif %}
+        </div>
+
         <p class="profile-bio">{{ profile.bio }}</p>
         <p class="profile-genre">Genre: {{ profile.genre }}</p>
-    </div>
-    
-    <div class="social-media-links">
-        {% if profile.facebook_link %}
-            <a href="{{ profile.facebook_link }}" target="_blank" class="social-icon fab fa-facebook-f"></a>
-        {% endif %}
-        {% if profile.youtube_link %}
-            <a href="{{ profile.youtube_link }}" target="_blank" class="social-icon fab fa-youtube"></a>
-        {% endif %}
-        {% if profile.whatsapp_link %}
-            <a href="{{ profile.whatsapp_link }}" target="_blank" class="social-icon fab fa-whatsapp"></a>
-        {% endif %}
-        {% if profile.instagram_link %}
-            <a href="{{ profile.instagram_link }}" target="_blank" class="social-icon fab fa-instagram"></a>
-        {% endif %}
-        {% if profile.tiktok_link %}
-            <a href="{{ profile.tiktok_link }}" target="_blank" class="social-icon fab fa-tiktok"></a>
-        {% endif %}
-        {% if profile.wechat_link %}
-            <a href="{{ profile.wechat_link }}" target="_blank" class="social-icon fab fa-weixin"></a>
-        {% endif %}
-        {% if profile.messenger_link %}
-            <a href="{{ profile.messenger_link }}" target="_blank" class="social-icon fab fa-facebook-messenger"></a>
-        {% endif %}
-        {% if profile.telegram_link %}
-            <a href="{{ profile.telegram_link }}" target="_blank" class="social-icon fab fa-telegram-plane"></a>
-        {% endif %}
-        {% if profile.viber_link %}
-            <a href="{{ profile.viber_link }}" target="_blank" class="social-icon fab fa-viber"></a>
-        {% endif %}
-        {% if profile.snapchat_link %}
-            <a href="{{ profile.snapchat_link }}" target="_blank" class="social-icon fab fa-snapchat-ghost"></a>
-        {% endif %}
     </div>
 
     {% if profile.user.track_set.exists %}
@@ -70,18 +124,27 @@
                 <h4>{{ track.title }}</h4>
                 <p>{{ track.description }}</p>
                 <p>Genre: {{ track.genre }}</p>
-                <button class="btn-play" onclick="playTrack('{{ track.file.url }}')"><i class="fas fa-play"></i> Play</button>
+                <button 
+                    class="btn-play play-button" 
+                    data-track-src="{{ track.file.url }}" 
+                    data-track-artist="{{ profile.name }}" 
+                    data-track-title="{{ track.title }}" 
+                    {% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
+                    <i class="fas fa-play"></i> Play
+                </button>
             </div>
             {% endfor %}
         </div>
     </div>
     {% endif %}
+
+    
     </div>
 </div>
 
 <style>
     .profile-container {
-        max-width: 80%;
+        max-width: 95%;
         margin: 0 auto;
         padding: 20px;
         background-color: #fff;
@@ -163,6 +226,45 @@
         color: #28a745;
         transform: translateY(-5px);
     }
+
+    /* Streaming Links Styles */
+    .streaming-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: center; 
+    }
+
+    .streaming-link {
+        display: flex;
+        align-items: center;
+        background-color: #f9f9f9;
+        padding: 10px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #333;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        justify-content: center; 
+    }
+
+    .streaming-link i {
+        margin-right: 8px;
+        font-size: 20px;
+        color: #28a745; /* Primary color, change as needed */
+    }
+
+    .streaming-link:hover {
+        background-color: #28a745;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    .streaming-link:hover i {
+        color: #fff;
+    }
+
 
     .default-profile-icon {
         font-size: 150px;

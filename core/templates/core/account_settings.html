@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2>Account Settings</h2>
-<form method="post" enctype="multipart/form-data">
+<form method="post" data-no-ajax="true" enctype="multipart/form-data">
     {% csrf_token %}
     <h3>Account Information</h3>
     {{ user_form.as_p }}
@@ -30,6 +30,20 @@
         </div>
     </div>
 
+    <h3>Music Streaming Links</h3>
+    <div class="streaming-links-grid">
+        <div>{{ profile_form.spotify_link.label_tag }} {{ profile_form.spotify_link }}</div>
+        <div>{{ profile_form.apple_music_link.label_tag }} {{ profile_form.apple_music_link }}</div>
+        <div>{{ profile_form.amazon_music_link.label_tag }} {{ profile_form.amazon_music_link }}</div>
+        <div>{{ profile_form.youtube_music_link.label_tag }} {{ profile_form.youtube_music_link }}</div>
+        <div>{{ profile_form.deezer_link.label_tag }} {{ profile_form.deezer_link }}</div>
+        <div>{{ profile_form.tidal_link.label_tag }} {{ profile_form.tidal_link }}</div>
+        <div>{{ profile_form.soundcloud_link.label_tag }} {{ profile_form.soundcloud_link }}</div>
+        <div>{{ profile_form.pandora_link.label_tag }} {{ profile_form.pandora_link }}</div>
+        <div>{{ profile_form.audiomack_link.label_tag }} {{ profile_form.audiomack_link }}</div>
+        <div>{{ profile_form.napster_link.label_tag }} {{ profile_form.napster_link }}</div>
+    </div>
+
     <h3>Social Media Links</h3>
     <div class="social-media-grid">
         <div>{{ profile_form.facebook_link.label_tag }} {{ profile_form.facebook_link }}</div>
@@ -43,30 +57,30 @@
         <div>{{ profile_form.viber_link.label_tag }} {{ profile_form.viber_link }}</div>
         <div>{{ profile_form.snapchat_link.label_tag }} {{ profile_form.snapchat_link }}</div>
     </div>
-
+    <br/>
     <button type="submit" class="btn">Save Changes</button>
 </form>
 
 <style>
-    .social-media-grid {
+    .social-media-grid, .streaming-links-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 20px;
         margin-top: 20px;
     }
     
-    .social-media-grid div {
+    .social-media-grid div, .streaming-links-grid div {
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
     
-    .social-media-grid label {
+    .social-media-grid label, .streaming-links-grid label {
         font-weight: bold;
         color: #333;
     }
     
-    .social-media-grid input {
+    .social-media-grid input, .streaming-links-grid input {
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 4px;
@@ -75,7 +89,7 @@
         box-sizing: border-box;
     }
     
-    .social-media-grid input:focus {
+    .social-media-grid input:focus, .streaming-links-grid input:focus {
         border-color: #28a745;
         outline: none;
     }

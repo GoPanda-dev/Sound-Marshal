@@ -44,7 +44,14 @@
                 <h3>{{ track.title }}</h3>
                 <p>{{ track.description }}</p>
                 <p>Genre: {{ track.genre }}</p>
-                <button class="btn-play" onclick="playTrack('{{ track.file.url }}')"><i class="fas fa-play"></i> Play</button>
+                <button 
+                class="btn-play play-button" 
+                data-track-src="{{ track.file.url }}" 
+                data-track-artist="{{ track.artist.profile.name }}" 
+                data-track-title="{{ track.title }}" 
+                {% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
+                <i class="fas fa-play"></i> Play
+            </button>
                 <a href="{% url 'submit_track' track.id %}" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit to Curators</a>
             </div>
             {% endfor %}

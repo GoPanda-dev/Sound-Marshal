@@ -82,6 +82,18 @@ class Profile(models.Model):
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     cover_image = models.ImageField(upload_to='cover_images/', blank=True, null=True)
 
+    # Streaming Service Links
+    spotify_link = models.URLField(max_length=200, blank=True, null=True)
+    apple_music_link = models.URLField(max_length=200, blank=True, null=True)
+    amazon_music_link = models.URLField(max_length=200, blank=True, null=True)
+    youtube_music_link = models.URLField(max_length=200, blank=True, null=True)
+    deezer_link = models.URLField(max_length=200, blank=True, null=True)
+    tidal_link = models.URLField(max_length=200, blank=True, null=True)
+    soundcloud_link = models.URLField(max_length=200, blank=True, null=True)
+    pandora_link = models.URLField(max_length=200, blank=True, null=True)
+    audiomack_link = models.URLField(max_length=200, blank=True, null=True)
+    napster_link = models.URLField(max_length=200, blank=True, null=True)
+
     # Social Media Links
     facebook_link = models.URLField(max_length=200, blank=True, null=True)
     youtube_link = models.URLField(max_length=200, blank=True, null=True)

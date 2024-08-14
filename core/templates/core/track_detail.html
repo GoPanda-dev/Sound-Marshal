@@ -6,8 +6,12 @@
 {% block content %}
 <h1>{{ track.title }}</h1>
 <p>Genre: {{ track.genre }}</p>
-<audio controls>
-    <source src="{{ track.file.url }}" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
+<button 
+class="btn-play play-button" 
+data-track-src="{{ track.file.url }}" 
+data-track-artist="{{ track.artist.profile.name }}" 
+data-track-title="{{ track.title }}" 
+{% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
+<i class="fas fa-play"></i> Play
+</button>
 {% endblock %}

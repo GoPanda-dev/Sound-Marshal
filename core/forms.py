@@ -42,11 +42,15 @@ class UserForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['name', 'bio', 'genre', 'slug',
-                  'facebook_link', 'youtube_link', 'whatsapp_link',
-                  'instagram_link', 'tiktok_link', 'wechat_link',
-                  'messenger_link', 'telegram_link', 'viber_link', 'snapchat_link',
-                  'profile_image', 'cover_image']
+        fields = [
+            'name', 'bio', 'genre', 'slug', 'profile_image', 'cover_image',
+            'facebook_link', 'youtube_link', 'whatsapp_link', 'instagram_link', 
+            'tiktok_link', 'wechat_link', 'messenger_link', 'telegram_link', 
+            'viber_link', 'snapchat_link',
+            'spotify_link', 'apple_music_link', 'amazon_music_link', 
+            'youtube_music_link', 'deezer_link', 'tidal_link', 
+            'soundcloud_link', 'pandora_link', 'audiomack_link', 'napster_link'
+        ]
 
     def clean_slug(self):
         slug = self.cleaned_data.get('slug')

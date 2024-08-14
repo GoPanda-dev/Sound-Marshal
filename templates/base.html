@@ -7,64 +7,12 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    <script>
-        function loadPage(event, url) {
-            event.preventDefault();
-
-            const excludedPaths = ['/accounts/login/', '/accounts/signup/', '/accounts/logout/', '/wallet/', '/purchase-credits/'];
-
-            if (excludedPaths.some(path => url.includes(path))) {
-                window.location.href = url;
-                return;
-            }
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    const newContent = document.createElement('div');
-                    newContent.innerHTML = xhr.responseText;
-
-                    if (newContent.querySelector('form[action*="login"]')) {
-                        window.location.href = url;
-                    } else {
-                        const newMainContent = newContent.querySelector('main.container').innerHTML;
-                        document.querySelector('main.container').innerHTML = newMainContent;
-                        window.history.pushState({ path: url }, '', url);
-                    }
-                } else if (xhr.status === 302 || xhr.status === 401) {
-                    window.location.href = xhr.getResponseHeader('Location') || url;
-                }
-            };
-
-            xhr.onerror = function() {
-                window.location.href = url;
-            };
-
-            xhr.send();
-        }
-
-        window.addEventListener('popstate', function(event) {
-            if (event.state) {
-                loadPage(event, event.state.path);
-            }
-        });
-
-        function playTrack(url) {
-            const audioPlayer = document.getElementById('audioPlayer');
-            audioPlayer.src = url;
-            audioPlayer.play();
-        }
-    </script>
 </head>
 <body class="{% if request.COOKIES.theme == 'dark' %}dark-theme{% endif %}">
     <header>
         <nav class="navbar">
             <div class="navbar-logo">
-                <a href="{% url 'home' %}" onclick="loadPage(event, '{% url 'home' %}')">
+                <a href="{% url 'home' %}">
                     <i class="fas fa-music"></i> Sound Marshal
                 </a>
             </div>
@@ -77,14 +25,14 @@
             <ul class="navbar-menu" id="navbar-menu">
                 {% if user.is_authenticated %}
                     {% if user.profile.role == 'artist' %}
-                        <li><a href="{% url 'artist_dashboard' %}" onclick="loadPage(event, '{% url 'artist_dashboard' %}')">Dashboard</a></li>
-                        <li><a href="{% url 'create_campaign' %}" onclick="loadPage(event, '{% url 'create_campaign' %}')">Create Campaign</a></li>
+                        <li><a href="{% url 'artist_dashboard' %}">Dashboard</a></li>
+                        <li><a href="{% url 'create_campaign' %}">Create Campaign</a></li>
                     {% elif user.profile.role == 'curator' %}
-                        <li><a href="{% url 'curator_dashboard' %}" onclick="loadPage(event, '{% url 'curator_dashboard' %}')">Dashboard</a></li>
+                        <li><a href="{% url 'curator_dashboard' %}">Dashboard</a></li>
                     {% endif %}
-                    <li><a href="{% url 'profile_detail' slug=user.profile.slug %}" onclick="loadPage(event, '{% url 'profile_detail' slug=user.profile.slug %}')">My Profile</a></li>
-                    <li><a href="{% url 'account_settings' %}" onclick="loadPage(event, '{% url 'account_settings' %}')">Settings</a></li>
-                    <li><a href="{% url 'wallet' %}" onclick="loadPage(event, '{% url 'wallet' %}')">Wallet: {{ user.profile.tokens }}</a></li>
+                    <li><a href="{% url 'profile_detail' slug=user.profile.slug %}">My Profile</a></li>
+                    <li><a href="{% url 'account_settings' %}">Settings</a></li>
+                    <li><a href="{% url 'wallet' %}">Wallet: {{ user.profile.tokens }}</a></li>
                     <li>
                         <a id="theme-toggle" class="theme-toggle-btn">Toggle Theme</a>
                     </li>
@@ -95,17 +43,17 @@
                         </form>
                     </li>
                 {% else %}
-                    <li><a href="{% url 'account_login' %}" onclick="loadPage(event, '{% url 'account_login' %}')">Login</a></li>
-                    <li><a href="{% url 'account_signup' %}" onclick="loadPage(event, '{% url 'account_signup' %}')">Sign Up</a></li>
+                    <li><a href="{% url 'account_login' %}">Login</a></li>
+                    <li><a href="{% url 'account_signup' %}">Sign Up</a></li>
                 {% endif %}
             </ul>
         </nav>
     </header>
     
     {% if user.is_authenticated %}
-        <div id="audio-player-container" style="position: fixed; bottom: 0; width: 100%; background: #333; padding: 10px; z-index: 1000;">
-            <audio id="audioPlayer" controls controlsList="nodownload"></audio>
-        </div>
+    <div id="audio-player-container" style="position: fixed; bottom: 0; left: 20px; z-index: 1000;">
+        {% include 'player.html' %}
+    </div>
     {% endif %}
 
     <main class="container">
@@ -137,7 +85,10 @@
             localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light');
         });
     </script>
+    <script src="{% static 'js/player-controls.js' %}"></script>
 </body>
+</html>
+
 <style>
     /* Navbar Styles */
     .navbar {

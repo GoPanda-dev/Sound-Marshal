@@ -101,12 +101,19 @@
         <div class="submission-item">
             <h3>{{ submission.track.title }} by {{ submission.track.artist.profile.name }}</h3>
             <p>Status: {{ submission.status }}</p>
-
+        
             <!-- Play button -->
-            <button class="btn-play" onclick="playTrack('{{ submission.track.file.url }}')">
+            <button 
+                class="btn-play play-button" 
+                data-track-src="{{ submission.track.file.url }}" 
+                data-track-artist="{{ submission.track.artist.profile.name }}" 
+                data-track-title="{{ submission.track.title }}" 
+                {% if submission.track.cover_image %} 
+                data-cover="{{ submission.track.cover_image.url }}" 
+                {% endif %}>
                 <i class="fas fa-play"></i> Play
             </button>
-
+        
             <!-- Feedback form -->
             {% if submission.status == 'pending' %}
             <a href="{% url 'provide_feedback' submission.id %}" class="btn-feedback">
@@ -114,7 +121,7 @@
             </a>
             {% endif %}
         </div>
-        {% endfor %}
+        {% endfor %}        
     </div>
 </div>
 {% endblock %}
