@@ -37,10 +37,10 @@
                         <a id="theme-toggle" class="theme-toggle-btn">Toggle Theme</a>
                     </li>
                     <li>
-                        <form method="post" action="{% url 'account_logout' %}">
+                        <form method="post" action="{% url 'account_logout' %}" data-no-ajax="true">
                             {% csrf_token %}
                             <button type="submit" class="dropdown-logout">Logout</button>
-                        </form>
+                        </form>                        
                     </li>
                 {% else %}
                     <li><a href="{% url 'account_login' %}">Login</a></li>

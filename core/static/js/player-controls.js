@@ -18,15 +18,13 @@ document.addEventListener('DOMContentLoaded', function () {
             audioPlayer.src = lastTrackSrc;
             audioPlayer.load();
 
-            // Update the track metadata
             document.querySelector('.track-artist').textContent = lastTrackArtist || '';
             document.querySelector('.track-name').textContent = lastTrackTitle || '';
 
-            // Update the overlay background image
             if (lastCoverImage) {
                 overlay.style.backgroundImage = `url(${lastCoverImage})`;
             } else {
-                overlay.style.backgroundImage = ''; // Remove the background if no image is provided
+                overlay.style.backgroundImage = '';
             }
 
             if (localStorage.getItem('isPlaying') === 'true') {
@@ -53,22 +51,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 const trackTitle = button.getAttribute('data-track-title');
                 const coverImage = button.getAttribute('data-cover');
 
-                // Update the audio source
                 audioPlayer.src = trackSrc;
-                audioPlayer.load(); // Ensure the new track is loaded before attempting to play
+                audioPlayer.load();
 
-                // Update the track metadata
                 document.querySelector('.track-artist').textContent = trackArtist;
                 document.querySelector('.track-name').textContent = trackTitle;
 
-                // Update the overlay background image
                 if (coverImage) {
                     overlay.style.backgroundImage = `url(${coverImage})`;
                 } else {
-                    overlay.style.backgroundImage = ''; // Remove the background if no image is provided
+                    overlay.style.backgroundImage = '';
                 }
 
-                // Play the audio
                 audioPlayer.play().then(() => {
                     playButton.setAttribute('playing', 'playing');
                 }).catch(error => {
@@ -76,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert("Unable to play this track. Please check the audio format or URL.");
                 });
 
-                // Save the current track information to localStorage
                 localStorage.setItem('trackSrc', trackSrc);
                 localStorage.setItem('trackArtist', trackArtist);
                 localStorage.setItem('trackTitle', trackTitle);
@@ -88,7 +81,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     playButton.addEventListener('click', function () {
         if (audioPlayer.paused || audioPlayer.ended) {
-            // Restore the volume when playing
             audioPlayer.volume = lastVolume;
             audioPlayer.play().then(() => {
                 playButton.setAttribute('playing', 'playing');
@@ -110,8 +102,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     volumeControl.addEventListener('input', function () {
-        audioPlayer.volume = this.value / 100; // Adjust volume based on user input
-        lastVolume = audioPlayer.volume; // Update lastVolume whenever the user changes the volume
+        audioPlayer.volume = this.value / 100;
+        lastVolume = audioPlayer.volume;
         localStorage.setItem('audioVolume', lastVolume);
     });
 
@@ -125,11 +117,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Event delegation for AJAX navigation and form handling
     document.addEventListener('click', function (event) {
         const link = event.target.closest('a');
-        const form = event.target.closest('form');
-
         if (link) {
             const url = link.getAttribute('href');
             if (url && url !== '#' && url !== 'javascript:void(0)') {
@@ -139,40 +128,20 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(html => {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
-                        const newContent = doc.querySelector('main.container').innerHTML;
-                        document.querySelector('main.container').innerHTML = newContent;
-
-                        // Reinitialize play buttons for the new content
-                        setupPlayButtons();
+                        const newContent = doc.querySelector('main.container');
+                        
+                        if (newContent) {
+                            document.querySelector('main.container').innerHTML = newContent.innerHTML;
+                            setupPlayButtons();
+                        } else {
+                            window.location.href = url; // Fallback to full page load
+                        }
                     })
-                    .catch(error => console.error('Error loading content:', error));
+                    .catch(error => {
+                        console.error('Error loading content:', error);
+                        window.location.href = url; // Fallback to full page load on error
+                    });
             }
-        }
-
-        if (form && !form.hasAttribute('data-no-ajax')) {
-            // Allow forms with `data-no-ajax` attribute to submit normally
-            event.preventDefault();
-            const formData = new FormData(form);
-            const actionUrl = form.getAttribute('action') || window.location.href;
-
-            fetch(actionUrl, {
-                method: form.getAttribute('method') || 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newContent = doc.querySelector('main.container').innerHTML;
-                document.querySelector('main.container').innerHTML = newContent;
-
-                // Reinitialize play buttons for the new content
-                setupPlayButtons();
-            })
-            .catch(error => console.error('Error submitting form:', error));
         }
     });
 
@@ -189,15 +158,71 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(html => {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
-                    const newContent = doc.querySelector('main.container').innerHTML;
-                    document.querySelector('main.container').innerHTML = newContent;
-
-                    setupPlayButtons();
+                    const newContent = doc.querySelector('main.container');
+                    
+                    if (newContent) {
+                        document.querySelector('main.container').innerHTML = newContent.innerHTML;
+                        setupPlayButtons();
+                    } else {
+                        window.location.href = searchUrl; // Fallback to full page load
+                    }
                 })
-                .catch(error => console.error('Error loading search results:', error));
+                .catch(error => {
+                    console.error('Error loading search results:', error);
+                    window.location.href = searchUrl; // Fallback to full page load on error
+                });
         });
     }
 
     loadLastPlayedTrack();
     setupPlayButtons();
+});
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Existing player control and other code...
+
+    // Handle AJAX form submission for Account Settings
+    const accountSettingsForm = document.getElementById('account-settings-form');
+
+    if (accountSettingsForm) {
+        accountSettingsForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(accountSettingsForm);
+            const url = accountSettingsForm.action;
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                const messagesDiv = document.getElementById('form-messages');
+                if (data.success) {
+                    messagesDiv.innerHTML = `<p class="success-message">${data.message}</p>`;
+                    // Optionally, redirect to another page
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    }
+                } else {
+                    messagesDiv.innerHTML = `<p class="error-message">There was an error with your submission.</p>`;
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.form_html;
+                    accountSettingsForm.innerHTML = tempDiv.querySelector('form').innerHTML;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const messagesDiv = document.getElementById('form-messages');
+                messagesDiv.innerHTML = `<p class="error-message">An error occurred. Please try again later.</p>`;
+            });
+        });
+    }
+
+    // Existing player control and other code...
 });

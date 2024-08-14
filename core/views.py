@@ -2,6 +2,7 @@ from itertools import chain
 import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from .forms import ProfileForm, UserForm, TrackForm, FeedbackForm, SubmissionForm, CampaignForm
 from .models import Profile, Track, Submission, Campaign, Transaction, User
 import stripe
@@ -11,6 +12,8 @@ from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 from django.contrib import messages
 from django.db.models import Q
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -148,6 +151,9 @@ def submit_track(request, track_id):
         # Check if the artist has enough tokens
         if request.user.profile.tokens > 0:
             if form.is_valid():
+                # Debugging: Verify the form is valid and is being saved correctly
+                print("Form is valid.")
+                
                 submission = form.save(commit=False)
                 submission.track = track
                 submission.curator = curator
@@ -166,6 +172,9 @@ def submit_track(request, track_id):
                 )
 
                 return redirect('artist_dashboard')
+            else:
+                # Debugging: Print out form errors if not valid
+                print("Form is not valid:", form.errors)
         else:
             form.add_error(None, 'You do not have enough tokens to submit this track.')
 
@@ -289,7 +298,7 @@ def account_settings(request):
         user_form = UserForm(request.POST, instance=user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
 
-        # Debugging: Print form errors if not valid
+        # Debugging: Check if forms are valid and print errors if any
         if not user_form.is_valid():
             print("User Form Errors:", user_form.errors)
         if not profile_form.is_valid():
@@ -298,9 +307,26 @@ def account_settings(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-            messages.success(request, "Your account settings have been updated.")
-            return redirect('profile_detail', slug=profile.slug)
 
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': "Your account settings have been updated.",
+                    'redirect_url': reverse('profile_detail', kwargs={'slug': profile.slug})
+                })
+            else:
+                messages.success(request, "Your account settings have been updated.")
+                return redirect('profile_detail', slug=profile.slug)
+        else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                form_html = render_to_string('core/account_settings.html', {
+                    'user_form': user_form,
+                    'profile_form': profile_form
+                }, request=request)
+                return JsonResponse({'success': False, 'form_html': form_html})
+            else:
+                messages.error(request, "There was an error with your submission.")
+    
     else:
         user_form = UserForm(instance=user)
         profile_form = ProfileForm(instance=profile)

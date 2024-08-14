@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2>Account Settings</h2>
-<form method="post" data-no-ajax="true" enctype="multipart/form-data">
+<form id="account-settings-form" method="post" action="{% url 'account_settings' %}" enctype="multipart/form-data">
     {% csrf_token %}
     <h3>Account Information</h3>
     {{ user_form.as_p }}
@@ -60,6 +60,9 @@
     <br/>
     <button type="submit" class="btn">Save Changes</button>
 </form>
+
+<div id="form-messages" style="margin-top: 20px;"></div>
+
 
 <style>
     .social-media-grid, .streaming-links-grid {

@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container">
     <h2>Provide Feedback for {{ submission.track.title }}</h2>
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" action="{% url 'provide_feedback' submission.id %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
 
