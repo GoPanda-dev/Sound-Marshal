@@ -117,27 +117,30 @@
         <h3 class="tracks-title">My Tracks</h3>
         <div class="tracks-grid">
             {% for track in profile.user.track_set.all %}
-            <div class="track-item">
-                {% if track.cover_image %}
-                <img src="{{ track.cover_image.url }}" alt="{{ track.title }} cover image" class="track-cover">
-                {% endif %}
-                <h4>{{ track.title }}</h4>
-                <p>{{ track.description }}</p>
-                <p>Genre: {{ track.genre }}</p>
+            <div class="track-item"
+                 {% if track.cover_image %}
+                 style="background-image: url('{{ track.cover_image.url }}');"
+                 {% endif %}>
                 <button 
-                    class="btn-play play-button" 
-                    data-track-src="{{ track.file.url }}" 
-                    data-track-artist="{{ profile.name }}" 
-                    data-track-title="{{ track.title }}" 
-                    {% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
-                    <i class="fas fa-play"></i> Play
+                 class="btn-play play-button" 
+                 data-track-src="{{ track.file.url }}" 
+                 data-track-artist="{{ profile.name }}" 
+                 data-track-title="{{ track.title }}" 
+                 {% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
+                 <i class="fas fa-play play-icon"></i>
                 </button>
+                <div class="track-info">
+                    <h3>{{ track.title }}</h3>
+                    <p>{{ track.description }}</p>
+                    <p>Genre: {{ track.genre }}</p>
+                </div>
+
             </div>
             {% endfor %}
         </div>
     </div>
     {% endif %}
-
+    
     
     </div>
 </div>
@@ -306,29 +309,9 @@
         text-align: center;
     }
 
-    .track-cover {
-        width: 100%;
-        height: auto;
-        border-radius: 12px;
-        margin-bottom: 15px;
-    }
-
-    .track-item h4 {
-        font-size: 20px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 10px;
-    }
-
-    .track-item p {
-        font-size: 16px;
-        color: #555;
-        margin-bottom: 10px;
-    }
 
     .btn-play {
         display: inline-block;
-        background-color: #28a745;
         color: #fff;
         padding: 10px 20px;
         border-radius: 8px;
@@ -339,7 +322,6 @@
     }
 
     .btn-play:hover {
-        background-color: #218838;
         transform: translateY(-5px);
     }
 </style>

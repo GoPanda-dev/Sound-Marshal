@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const overlay = document.querySelector('.overlay');
     const volumeControl = document.getElementById('volume');
     const toggleCanvasButton = document.getElementById('toggle-canvas');
-    const canvasSection = document.querySelector('.canvas');
+    const canvasSection = document.querySelector('.ToggleSection');
 
     let lastVolume = localStorage.getItem('audioVolume') ? parseFloat(localStorage.getItem('audioVolume')) : audioPlayer.volume;
 
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (link) {
             const url = link.getAttribute('href');
             const noAjax = link.getAttribute('data-no-ajax');
-            
+
             if (noAjax !== 'true' && url && url !== '#' && url !== 'javascript:void(0)') {
                 event.preventDefault();
                 fetch(url)
@@ -178,53 +178,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loadLastPlayedTrack();
     setupPlayButtons();
-});
-
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    // Existing player control and other code...
-
-    // Handle AJAX form submission for Account Settings
-    const accountSettingsForm = document.getElementById('account-settings-form');
-
-    if (accountSettingsForm) {
-        accountSettingsForm.addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const formData = new FormData(accountSettingsForm);
-            const url = accountSettingsForm.action;
-
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-            .then(response => response.json())
-            .then(data => {
-                const messagesDiv = document.getElementById('form-messages');
-                if (data.success) {
-                    messagesDiv.innerHTML = `<p class="success-message">${data.message}</p>`;
-                    // Optionally, redirect to another page
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    }
-                } else {
-                    messagesDiv.innerHTML = `<p class="error-message">There was an error with your submission.</p>`;
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = data.form_html;
-                    accountSettingsForm.innerHTML = tempDiv.querySelector('form').innerHTML;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                const messagesDiv = document.getElementById('form-messages');
-                messagesDiv.innerHTML = `<p class="error-message">An error occurred. Please try again later.</p>`;
-            });
-        });
-    }
-
-    // Existing player control and other code...
 });

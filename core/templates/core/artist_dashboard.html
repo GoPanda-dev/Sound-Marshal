@@ -37,26 +37,31 @@
         <h2><i class="fas fa-music"></i> Your Tracks</h2>
         <div class="tracks-grid">
             {% for track in tracks %}
-            <div class="track-item">
-                {% if track.cover_image %}
-                <img src="{{ track.cover_image.url }}" alt="{{ track.title }} cover image" class="track-cover">
-                {% endif %}
-                <h3>{{ track.title }}</h3>
-                <p>{{ track.description }}</p>
-                <p>Genre: {{ track.genre }}</p>
-                <button 
-                class="btn-play play-button" 
-                data-track-src="{{ track.file.url }}" 
-                data-track-artist="{{ track.artist.profile.name }}" 
-                data-track-title="{{ track.title }}" 
-                {% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
-                <i class="fas fa-play"></i> Play
-            </button>
+            <div class="track-item" 
+                 {% if track.cover_image %} 
+                 style="background-image: url('{{ track.cover_image.url }}');" 
+                 {% else %} 
+                 style="background-color: #333; color: #fff;" 
+                 {% endif %}>
+                <button
+                   class="btn-play play-button" 
+                   data-track-src="{{ track.file.url }}" 
+                   data-track-artist="{{ track.artist.profile.name }}" 
+                   data-track-title="{{ track.title }}" 
+                   {% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
+                    <i class="fas fa-play play-icon"></i>
+                </button>
+                <div class="track-info">
+                    <h3>{{ track.title }}</h3>
+                    <p>{{ track.description }}</p>
+                    <p>Genre: {{ track.genre }}</p>
+                </div>
                 <a href="{% url 'submit_track' track.id %}" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit to Curators</a>
             </div>
             {% endfor %}
         </div>
-    </div>
+    </div>    
+    
 
     <div class="dashboard-section">
         <h2><i class="fas fa-share-alt"></i> Submissions</h2>
@@ -165,7 +170,6 @@
 
     .btn-upload, .btn-submit, .btn-create-campaign, .btn-play, .btn-watch {
         display: inline-block;
-        background-color: #28a745;
         color: #fff;
         padding: 10px 20px;
         border-radius: 8px;
@@ -176,7 +180,6 @@
     }
 
     .btn-upload:hover, .btn-submit:hover, .btn-create-campaign:hover, .btn-play:hover, .btn-watch:hover {
-        background-color: #218838;
         transform: translateY(-5px);
     }
 </style>

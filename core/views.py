@@ -308,25 +308,11 @@ def account_settings(request):
             user_form.save()
             profile_form.save()
 
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True,
-                    'message': "Your account settings have been updated.",
-                    'redirect_url': reverse('profile_detail', kwargs={'slug': profile.slug})
-                })
-            else:
-                messages.success(request, "Your account settings have been updated.")
-                return redirect('profile_detail', slug=profile.slug)
+            messages.success(request, "Your account settings have been updated.")
+            return redirect('profile_detail', slug=profile.slug)
         else:
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                form_html = render_to_string('core/account_settings.html', {
-                    'user_form': user_form,
-                    'profile_form': profile_form
-                }, request=request)
-                return JsonResponse({'success': False, 'form_html': form_html})
-            else:
-                messages.error(request, "There was an error with your submission.")
-    
+            messages.error(request, "There was an error with your submission.")
+
     else:
         user_form = UserForm(instance=user)
         profile_form = ProfileForm(instance=profile)

@@ -1,23 +1,25 @@
 <div class="player">
     <div class="current-track clearfix">
-        <div class="canvas-toggle" id="toggle-canvas">
+        <div class="canvas-toggle collapsed" id="toggle-canvas">
             <i class="fas fa-caret-down"></i>
         </div>
         <div class="track-meta">
             <h3 class="track-artist"></h3>
             <h2 class="track-name"></h2>
         </div>
-        <div class="canvas clearfix">
-            <audio crossorigin="anonymous" id="mp3" src=""></audio>
-            <canvas id="canvas" width="256" height="256"></canvas>
-            <div style="" class="overlay" id="play"></div>
-            <input type="range" name="volume" id="volume" value="100">
-        </div>
-        <div class="controls">
-            <div class="shuffle" id="shuffle"><i class="fas fa-random"></i></div>
-            <div class="previous" id="previous"><i class="fas fa-step-backward"></i></div>
-            <div class="next" id="next"><i class="fas fa-step-forward"></i></div>
-            <div class="repeat" id="repeat"><i class="fas fa-redo"></i></div>
+        <div class="ToggleSection" style="display: none;">
+            <div class="canvas clearfix">
+                <audio crossorigin="anonymous" id="mp3" src=""></audio>
+                <canvas id="canvas" width="256" height="256"></canvas>
+                <div style="" class="overlay" id="play"></div>
+                <input type="range" name="volume" id="volume" value="100">
+            </div>
+            <div class="controls">
+                <div class="shuffle" id="shuffle"><i class="fas fa-random"></i></div>
+                <div class="previous" id="previous"><i class="fas fa-step-backward"></i></div>
+                <div class="next" id="next"><i class="fas fa-step-forward"></i></div>
+                <div class="repeat" id="repeat"><i class="fas fa-redo"></i></div>
+            </div>
         </div>
     </div>
     <div class="track-list clearfix" id="tracklist">

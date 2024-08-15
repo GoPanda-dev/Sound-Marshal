@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Sound Marshal{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="main-content">
+        {% if not user.is_authenticated %}
+            <h2>Discover and Connect with Curators</h2>
+            <p>Join our platform to get your music heard by industry professionals. Sign up now and take your music to the next level.</p>
+            <a href="{% url 'account_signup' %}" class="btn-primary">Sign Up</a>
+        {% elif user.profile.is_artist %}
+            <h2>Welcome back, {{ user.profile.name }}!</h2>
+            <p class="custom-message">Ready to submit new tracks? Explore the dashboard and connect with top curators.</p>
+            <a href="{% url 'artist_dashboard' %}" class="btn-primary">Go to Dashboard</a>
+
+            <!-- Recommended Curators Section -->
+            <h3>Top 3 Recommended Curators</h3>
+            <ul class="recommendations-list">
+                {% for curator in recommended_curators %}
+                    <li>
+                        <h4>{{ curator.profile.name }}</h4>
+                        <p>Genre: {{ curator.profile.genre }}</p>
+                        <a href="{% url 'profile_detail' slug=curator.profile.slug %}" class="btn btn-view-profile">View Profile</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% elif user.profile.is_curator %}
+            <h2>Welcome back, {{ user.profile.name }}!</h2>
+            <p class="custom-message">Discover new talent and provide feedback to help artists grow. Head over to your dashboard to see new submissions.</p>
+            <a href="{% url 'curator_dashboard' %}" class="btn-primary">Go to Dashboard</a>
+
+            <!-- Recommended Artists Section -->
+            <h3>Top 3 Recommended Artists</h3>
+            <ul class="recommendations-list">
+                {% for artist in recommended_artists %}
+                    <li>
+                        <h4>{{ artist.profile.name }}</h4>
+                        <p>Genre: {{ artist.profile.genre }}</p>
+                        <a href="{% url 'profile_detail' slug=artist.profile.slug %}" class="btn btn-view-profile">View Profile</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!-- How It Works Section -->
+        <div class="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                    <h3>1. Upload Tracks</h3>
+                    <p>Artists upload their tracks to share with curators.</p>
+                </div>
+                <div class="step">
+                    <i class="fas fa-users fa-3x"></i>
+                    <h3>2. Select Curators & Create Campaign</h3>
+                    <p>Choose the curators you want to review your tracks and create a campaign.</p>
+                </div>
+                <div class="step">
+                    <i class="fas fa-headphones-alt fa-3x"></i>
+                    <h3>3. Curators Review</h3>
+                    <p>Curators listen to your tracks, provide feedback, and share them.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+    .header {
+        background-color: #28a745;
+        color: #fff;
+        padding: 40px 0;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+        font-size: 48px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .main-content {
+        text-align: center;
+    }
+
+    .main-content h2 {
+        color: #28a745;
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+
+    .main-content p {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 30px;
+    }
+
+    .btn-primary {
+        background-color: #28a745;
+        color: #fff;
+        padding: 15px 30px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 18px;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+    }
+
+    .recommendations-list {
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .recommendations-list li {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        width: 30%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .recommendations-list li:hover {
+        transform: translateY(-5px);
+    }
+
+    .recommendations-list h4 {
+        margin: 0 0 10px;
+        color: #28a745;
+    }
+
+    .btn-view-profile {
+        background-color: #28a745;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+        display: inline-block;
+        margin-top: 10px;
+    }
+
+    .btn-view-profile:hover {
+        background-color: #218838;
+    }
+
+    .how-it-works {
+        margin-top: 40px;
+    }
+
+    .how-it-works h2 {
+        margin-bottom: 30px;
+        color: #28a745;
+    }
+
+    .steps-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .step {
+        flex: 1;
+        min-width: 200px;
+        max-width: 300px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        margin: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease;
+    }
+
+    .step:hover {
+        transform: translateY(-5px);
+    }
+
+    .step i {
+        color: #28a745;
+        margin-bottom: 15px;
+    }
+
+    .step h3 {
+        color: #28a745;
+        margin-bottom: 10px;
+        font-size: 20px;
+    }
+
+    .step p {
+        color: #555;
+        font-size: 16px;
+    }
+</style>
+
+{% endblock %}
