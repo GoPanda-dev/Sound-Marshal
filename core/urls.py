@@ -6,6 +6,7 @@ urlpatterns = [
     path('select-role/', views.select_role, name='select_role'),
     path('create-artist-profile/', views.create_artist_profile, name='create_artist_profile'),
     path('create-curator-label-profile/', views.create_curator_label_profile, name='create_curator_label_profile'),
+    path('create-fan-profile/', views.create_fan_profile, name='create_fan_profile'),
     path('account/settings/', views.account_settings, name='account_settings'),
     path('profile/<slug:slug>/', views.profile_detail, name='profile_detail'),
     path('dashboard/artist/', views.artist_dashboard, name='artist_dashboard'),

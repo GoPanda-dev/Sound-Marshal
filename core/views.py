@@ -326,22 +326,21 @@ def account_settings(request):
 
 @login_required
 def select_role(request):
-    # Ensure the profile exists
-    profile, created = Profile.objects.get_or_create(user=request.user)
-    
     if request.method == 'POST':
-        role = request.POST.get('role')
-        
-        if role == 'artist':
+        selected_role = request.POST.get('role')
+        profile = request.user.profile
+
+        if selected_role in ['artist', 'curator', 'fan']:
+            profile.role = selected_role
             profile.role_selected = True
-            profile.role = 'artist'
             profile.save()
-            return redirect('create_artist_profile')
-        elif role == 'curator':
-            profile.role_selected = True
-            profile.role = 'curator'
-            profile.save()
-            return redirect('create_curator_label_profile')
+
+            if selected_role == 'artist':
+                return redirect('create_artist_profile')
+            elif selected_role == 'curator':
+                return redirect('create_curator_label_profile')
+            elif selected_role == 'fan':
+                return redirect('create_fan_profile')
 
     return render(request, 'core/select_role.html')
 
@@ -356,7 +355,7 @@ def create_artist_profile(request):
             profile.role_selected = True
             profile.role = 'artist'
             profile.save()
-            return redirect('profile_detail', pk=profile.pk)
+            return redirect('profile_detail', slug=profile.slug)
     else:
         form = ProfileForm(instance=profile)
 
@@ -373,11 +372,28 @@ def create_curator_label_profile(request):
             profile.role_selected = True
             profile.role = 'curator'
             profile.save()
-            return redirect('profile_detail', pk=profile.pk)
+            return redirect('profile_detail', slug=profile.slug)
     else:
         form = ProfileForm(instance=profile)
 
     return render(request, 'core/create_curator_label_profile.html', {'form': form})
+
+@login_required
+def create_fan_profile(request):
+    profile = request.user.profile
+
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.role_selected = True
+            profile.role = 'fan'
+            profile.save()
+            return redirect('profile_detail', slug=profile.slug)
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, 'core/create_fan_profile.html', {'form': form})
 
 @login_required
 def create_campaign(request):

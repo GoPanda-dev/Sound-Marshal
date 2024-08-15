@@ -68,6 +68,7 @@ class Profile(models.Model):
     ROLE_CHOICES = (
         ('artist', 'Artist'),
         ('curator', 'Curator/Label'),
+        ('fan', 'Fan'),  # Added option to sign up as a Fan
     )
 
     tokens = models.IntegerField(default=0)
@@ -121,6 +122,11 @@ class Profile(models.Model):
     @property
     def is_curator(self):
         return self.role == 'curator'
+
+    @property
+    def is_fan(self):
+        return self.role == 'fan'  # Added property for Fan role
+
     
 class Track(models.Model):
     artist = models.ForeignKey(User, on_delete=models.CASCADE)
