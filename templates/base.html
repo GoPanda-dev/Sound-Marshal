@@ -32,7 +32,7 @@
                     {% endif %}
                     <li><a href="{% url 'profile_detail' slug=user.profile.slug %}">My Profile</a></li>
                     <li><a href="{% url 'account_settings' %}">Settings</a></li>
-                    <li><a href="{% url 'wallet' %}">Wallet: {{ user.profile.tokens }}</a></li>
+                    <li><a href="{% url 'wallet' %}" data-no-ajax="true">Wallet: {{ user.profile.tokens }}</a></li>
                     <li>
                         <a id="theme-toggle" class="theme-toggle-btn">Toggle Theme</a>
                     </li>

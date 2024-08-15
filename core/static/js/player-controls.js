@@ -121,7 +121,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const link = event.target.closest('a');
         if (link) {
             const url = link.getAttribute('href');
-            if (url && url !== '#' && url !== 'javascript:void(0)') {
+            const noAjax = link.getAttribute('data-no-ajax');
+            
+            if (noAjax !== 'true' && url && url !== '#' && url !== 'javascript:void(0)') {
                 event.preventDefault();
                 fetch(url)
                     .then(response => response.text())

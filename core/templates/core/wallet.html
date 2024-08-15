@@ -116,7 +116,7 @@
     {% endif %}
 
     <h2>Add Funds</h2>
-    <form id="payment-form" method="post" action="{% url 'purchase_credits' %}">
+    <form id="payment-form" method="post" action="{% url 'purchase_credits' %}" data-no-ajax="true">
         {% csrf_token %}
         <label for="amount">Amount (USD):</label>
         <input type="number" id="amount" name="amount" min="1" required>
