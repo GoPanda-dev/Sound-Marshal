@@ -27,5 +27,11 @@ urlpatterns = [
     path('manage-subscription/', views.manage_subscription, name='manage_subscription'),
     path('submission/<int:submission_id>/feedback/', views.provide_feedback, name='provide_feedback'),
     path('search/', views.search, name='search'),
-    path('track/<int:id>/', views.track_detail, name='track_detail'),
+    path('track/<int:track_id>/', views.track_detail, name='track_detail'),
+
+    path('explore/', views.explore, name='explore'),
+    path('like-track/', views.like_track, name='like_track'),
+    path('check-if-liked/<int:track_id>/', views.check_if_liked, name='check_if_liked'),
+    path('toggle-like-track/', views.toggle_like_track, name='toggle_like_track'),
+    path('track/<int:track_id>/add_comment/', views.add_comment, name='add_comment'),
 ]

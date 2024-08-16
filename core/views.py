@@ -1,28 +1,40 @@
 from itertools import chain
+import json
 import os
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from .forms import ProfileForm, UserForm, TrackForm, FeedbackForm, SubmissionForm, CampaignForm
-from .models import Profile, Track, Submission, Campaign, Transaction, User
+from .models import Profile, Track, Submission, Campaign, Transaction, User, Comment
 import stripe
 from django.conf import settings
 from .models import Payment, Subscription, Credit
 from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
 
 load_dotenv()  # Load environment variables from .env file
 
 # Load Stripe API keys
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
-def track_detail(request, id):
-    track = get_object_or_404(Track, id=id)
-    return render(request, 'core/track_detail.html', {'track': track})
+def track_detail(request, track_id):
+    track = get_object_or_404(Track, id=track_id)
+
+    # Fetch related tracks by genre, excluding the current track
+    related_tracks = Track.objects.filter(genre=track.genre).exclude(id=track.id)[:5]
+
+    context = {
+        'track': track,
+        'related_tracks': related_tracks,
+    }
+
+    return render(request, 'core/track_detail.html', context)
 
 def search(request):
     query = request.GET.get('q')
@@ -42,6 +54,11 @@ def search(request):
         'tracks': tracks,
         'profiles': profiles,
     }
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        html = render_to_string('core/partials/search_results_partial.html', context)
+        return JsonResponse({'html': html})
+
     return render(request, 'core/search_results.html', context)
 
 @login_required
@@ -439,6 +456,113 @@ def create_campaign(request):
 
     return render(request, 'core/create_campaign.html', {'form': form})
 
+@login_required
+def toggle_like_track(request):
+
+    try:
+        data = json.loads(request.body)
+        track_id = data.get('track_id')
+        
+        track = Track.objects.get(id=track_id)
+        profile = request.user.profile
+        
+        if profile.liked_tracks.filter(id=track_id).exists():
+            # Track is already liked, so we remove it
+            profile.liked_tracks.remove(track)
+            liked = False
+        else:
+            # Track is not liked, so we add it
+            profile.liked_tracks.add(track)
+            liked = True
+        
+        return JsonResponse({'success': True, 'liked': liked})
+    except Track.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Track not found'})
+
+
+@login_required
+def check_if_liked(request, track_id):
+    try:
+        track = Track.objects.get(id=track_id)
+        profile = request.user.profile
+        
+        is_liked = profile.liked_tracks.filter(id=track_id).exists()
+        
+        return JsonResponse({'is_liked': is_liked})
+    except Track.DoesNotExist:
+        return JsonResponse({'is_liked': False, 'message': 'Track not found'})
+
+@login_required
+@require_POST
+def like_track(request):
+    try:
+        data = json.loads(request.body)
+        track_id = data.get('track_id')
+        print(f"Received track ID: {track_id}")  # Debugging
+        
+        track = Track.objects.get(id=track_id)
+        profile = request.user.profile
+        
+        # Add the track to the user's liked tracks
+        profile.liked_tracks.add(track)
+        print(f"Track {track_id} added to {request.user.username}'s likes.")  # Debugging
+        
+        return JsonResponse({'success': True})
+    except Track.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Track not found'})
+    except Exception as e:
+        print(f"Error liking track: {str(e)}")  # Debugging
+        return JsonResponse({'success': False, 'message': str(e)})
+    
+@login_required
+def add_comment(request, track_id):
+    track = get_object_or_404(Track, id=track_id)
+    
+    if request.method == 'POST':
+        content = request.POST.get('comment')
+        if content:
+            Comment.objects.create(
+                user=request.user,
+                track=track,
+                content=content,
+            )
+    
+    return redirect('track_detail', track_id=track.id)
+
+@login_required
+def explore(request):
+    user = request.user
+    user_profile = user.profile
+    user_genres = [genre.strip() for genre in user_profile.genre.split(',')]  # Clean up genre strings
+    user_likes = user_profile.liked_tracks.values_list('id', flat=True)  # Get a list of liked track IDs
+    liked_artists = user_profile.liked_tracks.values_list('artist_id', flat=True).distinct()  # Get IDs of liked artists
+
+    # Fetch tracks related to the user's genre and exclude already liked tracks
+    related_tracks = Track.objects.filter(
+        Q(genre__in=user_genres) | Q(artist_id__in=liked_artists)
+    ).exclude(id__in=user_likes).select_related('artist').order_by('-upload_date')
+    
+    # Fetch profiles related to the user's genre, excluding the current user
+    related_profiles = Profile.objects.filter(
+        genre__in=user_genres
+    ).exclude(user=user).select_related('user').annotate(track_count=Count('user__track')).order_by('-track_count')
+
+    # Apply pagination to the related tracks and profiles
+    track_paginator = Paginator(related_tracks, 10)  # Show 10 tracks per page
+    profile_paginator = Paginator(related_profiles, 10)  # Show 10 profiles per page
+
+    track_page_number = request.GET.get('track_page')
+    profile_page_number = request.GET.get('profile_page')
+
+    track_page_obj = track_paginator.get_page(track_page_number)
+    profile_page_obj = profile_paginator.get_page(profile_page_number)
+
+    context = {
+        'track_page_obj': track_page_obj,
+        'profile_page_obj': profile_page_obj,
+    }
+
+    return render(request, 'core/explore.html', context)
 
 def home(request):
     recommended_curators = []

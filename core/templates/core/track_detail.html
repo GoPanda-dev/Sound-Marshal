@@ -4,14 +4,326 @@
 {% block title %}{{ track.title }} - Track Details{% endblock %}
 
 {% block content %}
-<h1>{{ track.title }}</h1>
-<p>Genre: {{ track.genre }}</p>
-<button 
-class="btn-play play-button" 
-data-track-src="{{ track.file.url }}" 
-data-track-artist="{{ track.artist.profile.name }}" 
-data-track-title="{{ track.title }}" 
-{% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
-<i class="fas fa-play"></i> Play
-</button>
+<div class="track-detail-container">
+    <div class="track-header">
+        <div class="track-cover-wrapper">
+            <button 
+                class="btn-play track-cover-button" 
+                data-track-id="{{ track.id }}"
+                data-track-src="{{ track.file.url }}" 
+                data-track-artist="{{ track.artist.profile.name }}" 
+                data-track-title="{{ track.title }}" 
+                {% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
+                {% if track.cover_image %}
+                    <img src="{{ track.cover_image.url }}" alt="{{ track.title }} cover image" class="track-cover-image">
+                {% else %}
+                    <img src="/static/images/default_cover.jpg" alt="Default cover image" class="track-cover-image">
+                {% endif %}
+                <div class="track-info-overlay">
+                    <i class="fas fa-play play-icon"></i>
+                </div>
+            </button>
+        </div>
+
+        <div class="track-details">
+            <h1 class="track-title">{{ track.title }}</h1>
+            <p class="track-artist">by <a href="{% url 'profile_detail' track.artist.profile.slug %}">{{ track.artist.profile.name }}</a></p>
+            <p class="track-genre">{{ track.genre }}</p>
+            <p class="track-description">{{ track.description }}</p>
+            <p class="track-upload-date">Uploaded on: {{ track.upload_date|date:"F j, Y" }}</p>
+            <p class="track-artist-label">Label: {{ track.artist.profile.label_name|default:"Independent" }}</p>
+        </div>
+    </div>
+
+    <div class="track-related">
+        {% if related_tracks %}<h3>Related Tracks</h3>{% endif %}
+        <div class="tracks-grid">
+            {% for related_track in related_tracks %}
+                <div class="track-item"
+                    {% if related_track.cover_image %}
+                    style="background-image: url('{{ related_track.cover_image.url }}');"
+                    {% endif %}>
+                    <button 
+                    class="btn-play play-button" 
+                    data-track-id="{{ related_track.id }}"
+                    data-track-src="{{ related_track.file.url }}" 
+                    data-track-artist="{{ related_track.artist.profile.name }}" 
+                    data-track-title="{{ related_track.title }}" 
+                    {% if related_track.cover_image %} data-cover="{{ related_track.cover_image.url }}" {% endif %}>
+                    <i class="fas fa-play play-icon"></i>
+                    </button>
+                    <div class="track-info">
+                        <a href="{% url 'track_detail' related_track.id %}"><h3>{{ related_track.title }}</h3></a>
+                        <p>{{ related_track.description }}</p>
+                        <p>Genre: {{ related_track.genre }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+
+    <div class="track-comments">
+        <h3>Comments</h3>
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'add_comment' track.id %}">
+                {% csrf_token %}
+                <textarea name="comment" rows="4" placeholder="Add a comment..." required></textarea>
+                <button type="submit" class="btn-comment">Submit</button>
+            </form>
+        {% else %}
+            <p>You must be <a href="{% url 'account_login' %}">logged in</a> to leave a comment.</p>
+        {% endif %}
+
+        {% if comments %}
+            <ul class="comments-list">
+                {% for comment in comments %}
+                    <li>
+                        <p><strong>{{ comment.user.username }}</strong> commented:</p>
+                        <p>{{ comment.content }}</p>
+                        <p class="comment-date">{{ comment.created_at|date:"F j, Y, g:i a" }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No comments yet. Be the first to comment!</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .track-detail-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .track-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .track-item {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        height: 300px;
+    }
+
+    .track-cover-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        aspect-ratio: 1 / 1; /* Maintain square aspect ratio */
+        border-radius: 8px;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .track-cover-button {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: none;
+        padding: 0;
+        cursor: pointer;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+    .track-cover-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+    }
+
+    .track-cover-button:hover .track-cover-image {
+        transform: scale(1.05);
+    }
+
+    .track-info-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 8px;
+        box-sizing: border-box;
+    }
+
+    .track-cover-button:hover .track-info-overlay {
+        opacity: 1;
+    }
+
+    .track-title {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+
+    .track-artist, .track-genre {
+        font-size: 1.2rem;
+        margin-bottom: 5px;
+    }
+
+    .track-artist a {
+        text-decoration: underline;
+    }
+
+    .play-icon {
+        font-size: 36px;
+        margin-top: 15px;
+        color: #fff;
+    }
+
+    .track-details {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .track-details h2 {
+        font-size: 1.8rem;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .track-description {
+        font-size: 1.1rem;
+        color: #555;
+        margin-bottom: 10px;
+    }
+
+    .track-upload-date, .track-artist-label {
+        font-size: 1rem;
+        color: #777;
+    }
+
+    .track-related {
+        margin-top: 40px;
+    }
+
+    .track-related h3 {
+        font-size: 1.6rem;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .related-tracks-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .related-tracks-list li {
+        margin-bottom: 10px;
+    }
+
+    .related-tracks-list a {
+        color: #28a745;
+        text-decoration: none;
+    }
+
+    .related-tracks-list a:hover {
+        text-decoration: underline;
+    }
+
+    .track-comments {
+        margin-top: 40px;
+    }
+
+    .track-comments h3 {
+        font-size: 1.6rem;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .track-comments textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+
+    .btn-comment {
+        background-color: #28a745;
+        color: #fff;
+        padding: 10px 20px;
+        font-size: 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        border: none;
+        outline: none;
+    }
+
+    .btn-comment:hover {
+        background-color: #218838;
+        transform: translateY(-3px);
+    }
+
+    .comments-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .comments-list li {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .comment-date {
+        font-size: 0.9rem;
+        color: #999;
+    }
+
+    @media (max-width: 768px) {
+        .track-header {
+            flex-direction: column;
+        }
+
+        .track-cover-wrapper {
+            max-width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .track-details {
+            padding: 10px;
+        }
+    }
+</style>
 {% endblock %}

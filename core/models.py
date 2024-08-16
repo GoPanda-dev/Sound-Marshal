@@ -79,6 +79,8 @@ class Profile(models.Model):
     genre = models.CharField(max_length=100, default='None')
     slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
 
+    liked_tracks = models.ManyToManyField('Track', related_name='liked_by', blank=True)
+
     # Profile images
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
     cover_image = models.ImageField(upload_to='cover_images/', blank=True, null=True)
@@ -139,6 +141,15 @@ class Track(models.Model):
 
     def __str__(self):
         return self.title
+    
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    track = models.ForeignKey(Track, on_delete=models.CASCADE, related_name='comments')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.track.title}"
 
 class Campaign(models.Model):
     artist = models.ForeignKey(User, on_delete=models.CASCADE, related_name='campaigns')

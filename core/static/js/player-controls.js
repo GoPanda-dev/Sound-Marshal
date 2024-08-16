@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggleCanvasButton = document.getElementById('toggle-canvas');
     const canvasSection = document.querySelector('.ToggleSection');
 
+    const likeButton = document.getElementById('like');
+    let currentTrackId = null;
+
     let lastVolume = localStorage.getItem('audioVolume') ? parseFloat(localStorage.getItem('audioVolume')) : audioPlayer.volume;
 
     function loadLastPlayedTrack() {
@@ -13,20 +16,24 @@ document.addEventListener('DOMContentLoaded', function () {
         const lastTrackArtist = localStorage.getItem('trackArtist');
         const lastTrackTitle = localStorage.getItem('trackTitle');
         const lastCoverImage = localStorage.getItem('coverImage');
-
+        const lastTrackId = localStorage.getItem('trackId');
+    
         if (lastTrackSrc) {
             audioPlayer.src = lastTrackSrc;
             audioPlayer.load();
-
+    
             document.querySelector('.track-artist').textContent = lastTrackArtist || '';
             document.querySelector('.track-name').textContent = lastTrackTitle || '';
-
+            currentTrackId = lastTrackId;
+    
             if (lastCoverImage) {
                 overlay.style.backgroundImage = `url(${lastCoverImage})`;
             } else {
                 overlay.style.backgroundImage = '';
             }
-
+    
+            checkIfTrackIsLiked(lastTrackId);
+    
             if (localStorage.getItem('isPlaying') === 'true') {
                 audioPlayer.play().then(() => {
                     playButton.setAttribute('playing', 'playing');
@@ -42,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
             playButton.removeAttribute('playing');
         }
     }
-
+    
     function setupPlayButtons() {
         document.querySelectorAll('.btn-play').forEach(function (button) {
             button.addEventListener('click', function () {
@@ -50,7 +57,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 const trackArtist = button.getAttribute('data-track-artist');
                 const trackTitle = button.getAttribute('data-track-title');
                 const coverImage = button.getAttribute('data-cover');
+                const trackId = button.getAttribute('data-track-id');  // Capture the track ID
 
+                currentTrackId = trackId;  // Set currentTrackId
+
+                // Store track details in localStorage
+                localStorage.setItem('trackSrc', trackSrc);
+                localStorage.setItem('trackArtist', trackArtist);
+                localStorage.setItem('trackTitle', trackTitle);
+                localStorage.setItem('coverImage', coverImage);
+                localStorage.setItem('trackId', trackId);  // Store track ID in localStorage
+                localStorage.setItem('isPlaying', 'true');
+
+                // Update the audio player and play the track
                 audioPlayer.src = trackSrc;
                 audioPlayer.load();
 
@@ -63,21 +82,80 @@ document.addEventListener('DOMContentLoaded', function () {
                     overlay.style.backgroundImage = '';
                 }
 
+                checkIfTrackIsLiked(trackId);  // Check if the track is liked
+
                 audioPlayer.play().then(() => {
                     playButton.setAttribute('playing', 'playing');
                 }).catch(error => {
                     console.error("Error playing audio:", error);
                     alert("Unable to play this track. Please check the audio format or URL.");
                 });
-
-                localStorage.setItem('trackSrc', trackSrc);
-                localStorage.setItem('trackArtist', trackArtist);
-                localStorage.setItem('trackTitle', trackTitle);
-                localStorage.setItem('coverImage', coverImage);
-                localStorage.setItem('isPlaying', 'true');
             });
         });
     }
+
+    function checkIfTrackIsLiked(trackId) {
+        if (trackId) {
+            fetch(`/check-if-liked/${trackId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_liked) {
+                    likeButton.classList.add('liked');  // Indicate that the track is liked
+                } else {
+                    likeButton.classList.remove('liked');  // Indicate that the track is not liked
+                }
+            })
+            .catch(error => console.error('Error checking if track is liked:', error));
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    likeButton.addEventListener('click', function () {
+        if (currentTrackId) {
+            fetch(`/toggle-like-track/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({ track_id: currentTrackId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.liked) {
+                        likeButton.classList.add('liked');  // Indicate that the track is liked
+                    } else {
+                        likeButton.classList.remove('liked');  // Indicate that the track is unliked
+                    }
+                } else {
+                    console.error('Error toggling like:', data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        } else {
+            console.error('No current track ID is set.');
+        }
+    });
 
     playButton.addEventListener('click', function () {
         if (audioPlayer.paused || audioPlayer.ended) {

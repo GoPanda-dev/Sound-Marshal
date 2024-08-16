@@ -1,0 +1,35 @@
+{% if tracks.exists or profiles.exists %}
+    <div class="search-results-section">
+        <h2>Tracks</h2>
+        <ul class="search-results-list">
+            {% for track in tracks %}
+                <li class="search-result-item">
+                    <a href="{% url 'track_detail' track.id %}">
+                        {% if track.cover_image %}
+                            <img src="{{ track.cover_image.url }}" alt="{{ track.title }} cover image" class="result-image">
+                        {% endif %}
+                        <span>{{ track.title }}</span> - <span>{{ track.genre }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="search-results-section">
+        <h2>Profiles</h2>
+        <ul class="search-results-list">
+            {% for profile in profiles %}
+                <li class="search-result-item">
+                    <a href="{% url 'profile_detail' slug=profile.slug %}">
+                        {% if profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }} profile picture" class="result-image">
+                        {% endif %}
+                        <span>{{ profile.name }}</span> - <span>{{ profile.genre }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% else %}
+    <p>No results found for "{{ query }}".</p>
+{% endif %}

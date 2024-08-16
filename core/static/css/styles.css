@@ -45,7 +45,7 @@ p {
 /* Forms */
 form {
     background-color: #fff;
-    padding: 20px;
+    padding: 10px;
     margin-bottom: 20px;
 }
 
@@ -282,7 +282,7 @@ th {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 0; /* Remove padding if not needed */
+    padding: 10px; /* Remove padding if not needed */
     cursor: pointer;
     height: 250px;
 }
@@ -392,12 +392,6 @@ th {
     transition: background-color 0.3s ease;
 }
 
-.btn-upload:hover, .btn-submit:hover, .btn-create-campaign:hover, .btn-play:hover, .btn-watch:hover {
-}
-
-.btn-play {
-    margin-right: 10px;
-}
 
 /* Dark Theme Styles */
 body.dark-theme {

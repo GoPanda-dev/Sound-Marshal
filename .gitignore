@@ -1,0 +1,168 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Django specific
+*.log
+*.pot
+*.py[cod]
+*.sqlite3
+*.pkl
+*.pyo
+db.sqlite3
+media/
+staticfiles/
+*.mo
+
+# Environments
+.env
+.venv/
+venv/
+ENV/
+env.bak/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Secrets
+secrets.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Node.js (if using npm or yarn)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Pytest
+.pytest_cache/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# SQLAlchemy
+*.db
+*.sqlite
+
+# Sphinx documentation
+docs/_build/
+
+# PyInstaller
+*.spec
+
+# C extensions
+*.o
+*.obj
+*.dll
+*.dylib
+*.so
+
+# Package files
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg-info/
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Pyre type checker
+.pyre/
+
+# Pycharm specific
+.idea/
+
+# Local env files
+local_settings.py
+
+# Celery beat schedule file
+celerybeat-schedule
+
+# Translations
+*.mo
+*.pot
+
+# VSCode specific
+.vscode/
+
+# JetBrains specific
+.idea/
+*.iml
+
+# SFTP storage
+.sftp-config.json
+
+# Favicon files
+favicon.ico
+
+# Heroku files
+Procfile
+
+# Database backup files
+*.bak
+*.sql
+*.sql.gz
+
+# Spyder IDE specific
+.spyderproject
+.spyproject
+
+# Text files
+*.log
+*.txt
+*.csv
+
+# Editor swap files
+*.swp
+*.swo
+
+# Temporary files
+*.tmp

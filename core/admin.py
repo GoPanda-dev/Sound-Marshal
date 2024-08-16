@@ -1,12 +1,16 @@
 from django.contrib import admin
 from .models import Profile, Track, Campaign, Submission, Transaction, Payment, Subscription, Credit
 
+class LikedTracksInline(admin.TabularInline):
+    model = Profile.liked_tracks.through  # Manage the many-to-many relationship through the intermediary table
+    extra = 1
+
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'name', 'role', 'tokens', 'genre', 'slug', 'role_selected')
     search_fields = ('user__username', 'name', 'genre', 'slug')
     list_filter = ('role', 'role_selected')
-    readonly_fields = ('tokens',)  # Tokens might be managed by the system, so we set it to readonly in admin
+    readonly_fields = ('tokens',)
     fieldsets = (
         (None, {
             'fields': ('user', 'role', 'name', 'bio', 'genre', 'slug', 'role_selected')
@@ -28,6 +32,7 @@ class ProfileAdmin(admin.ModelAdmin):
             'fields': ('tokens',)
         }),
     )
+    inlines = [LikedTracksInline]
 
 @admin.register(Track)
 class TrackAdmin(admin.ModelAdmin):
@@ -74,6 +79,11 @@ class SubmissionAdmin(admin.ModelAdmin):
             'fields': ('status',)
         }),
     )
+    readonly_fields = ('submission_date',)  # Readonly field for submission date
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not change:  # Only send notification on creation
+            obj.notify_curator()
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):

@@ -17,8 +17,14 @@
                 </a>
             </div>
             <form class="navbar-search" action="{% url 'search' %}" method="get">
-                <input type="text" name="q" placeholder="Search..." class="search-input">
+                <input type="text" name="q" id="search-input" placeholder="Search..." class="search-input">
             </form>
+            <div id="search-results" class="search-results"></div>
+            <div class="navbar-explore">
+                <a href="{% url 'explore' %}" class="explore-link">
+                    <i class="fas fa-compass"></i> Explore
+                </a>
+            </div>
             <button class="navbar-toggle" id="navbar-toggle">
                 <i class="fas fa-bars"></i>
             </button>
@@ -39,7 +45,7 @@
                     <li>
                         <form method="post" action="{% url 'account_logout' %}" data-no-ajax="true">
                             {% csrf_token %}
-                            <button type="submit" class="dropdown-logout">Logout</button>
+                            <button type="submit" class="dropdown-logout" data-no-ajax="true">Logout</button>
                         </form>                        
                     </li>
                 {% else %}
@@ -51,7 +57,7 @@
     </header>
     
     {% if user.is_authenticated %}
-    <div id="audio-player-container" style="position: fixed; bottom: 0; left: 20px; z-index: 1000;">
+    <div id="audio-player-container" style="position: fixed; bottom: 0; left: 20px; z-index: 4;">
         {% include 'player.html' %}
     </div>
     {% endif %}
@@ -61,6 +67,55 @@
         {% endblock %}
     </main>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+            const searchForm = document.querySelector('.navbar-search');
+        
+            searchInput.addEventListener('input', function () {
+                const query = searchInput.value;
+        
+                if (query.length > 0) {
+                    fetch(`/search/?q=${query}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResults.innerHTML = data.html;  // Insert the HTML directly into the DOM
+                        addResultClickListener();  // Add click listener to new results
+                    })
+                    .catch(error => console.error('Error:', error));
+                } else {
+                    searchResults.innerHTML = ''; // Clear the results if the input is empty
+                }
+            });
+        
+            // Listen for the form submission
+            searchForm.addEventListener('submit', function(event) {
+                setTimeout(function() {
+                    searchInput.value = '';  // Clear the input field after the form submission
+                    searchResults.innerHTML = ''; // Clear the search results
+                }, 50); // Delay to allow the form submission to complete
+            });
+        
+            // Function to add click listeners to search results
+            function addResultClickListener() {
+                const resultItems = document.querySelectorAll('.search-result-item a');
+                resultItems.forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        setTimeout(function() {
+                            searchInput.value = '';  // Clear the input field after clicking a result
+                            searchResults.innerHTML = ''; // Clear the search results
+                        }, 50); // Delay to ensure navigation happens before clearing
+                    });
+                });
+            }
+        });
+        
+    </script>
     <script>
         // Toggle Navbar Menu
         const navbarToggle = document.getElementById('navbar-toggle');
@@ -89,6 +144,80 @@
 </body>
 </html>
 
+<style>
+    /* Container for search results */
+    #search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 5;
+        max-height: 320px;
+        overflow-y: auto;
+        width: 65%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .search-results-section {
+        padding: 10px;
+        margin-bottom: 0px;
+    }
+    
+    .search-results-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .search-result-item {
+        padding: 0;  /* Remove padding from the list item */
+        border-bottom: 1px solid #eee;
+    }
+    
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    
+    .search-result-item a {
+        display: flex;
+        align-items: center;
+        padding: 8px 10px;
+        text-decoration: none;
+        color: #333;
+        transition: background-color 0.3s ease;
+    }
+    
+    .search-result-item a:hover {
+        background-color: #f8f8f8;
+    }
+    
+    .result-image {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        margin-right: 10px;
+        object-fit: cover;
+    }
+    
+    .search-result-item a span {
+        color: #333;
+        display: block;
+    }
+    
+    /* No results found message */
+    #search-results p {
+        margin: 0;
+        padding: 10px;
+        color: #999;
+        text-align: center;
+    }
+    
+</style>
 <style>
     /* Navbar Styles */
     .navbar {
@@ -131,6 +260,7 @@
         width: 200px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border-radius: 10px;
+        z-index: 4;
     }
     
     .navbar-menu.show-menu {
@@ -154,6 +284,7 @@
     .navbar-menu a:hover {
         color: #28a745;
     }
+
     
     /* Search Bar Styles */
     .navbar-search {
@@ -180,6 +311,21 @@
         border-color: #28a745;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         background-color: #fff;
+    }
+
+    .navbar-explore {
+        margin-right: 20px; /* Adjust spacing as needed */
+    }
+    
+    .explore-link {
+        color: #000;
+        text-decoration: none !important;
+        display: flex;
+        align-items: center;
+    }
+    
+    .explore-link i {
+        margin-right: 5px;
     }
     
     /* Mobile Styles */
