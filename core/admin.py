@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Track, Campaign, Submission, Transaction, Payment, Subscription, Credit
+from .models import Profile, Track, Campaign, Submission, Transaction, Payment, Subscription, Credit, Comment
 
 class LikedTracksInline(admin.TabularInline):
     model = Profile.liked_tracks.through  # Manage the many-to-many relationship through the intermediary table
@@ -7,16 +7,20 @@ class LikedTracksInline(admin.TabularInline):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'name', 'role', 'tokens', 'genre', 'slug', 'role_selected')
+    list_display = ('user', 'name', 'role', 'tokens', 'genre', 'slug', 'role_selected', 'get_followers_count')
     search_fields = ('user__username', 'name', 'genre', 'slug')
     list_filter = ('role', 'role_selected')
     readonly_fields = ('tokens',)
+    filter_horizontal = ('followers',)  # Adds a filterable interface for the followers field
     fieldsets = (
         (None, {
             'fields': ('user', 'role', 'name', 'bio', 'genre', 'slug', 'role_selected')
         }),
         ('Profile Images', {
             'fields': ('profile_image', 'cover_image')
+        }),
+        ('Followers', {
+            'fields': ('followers',)  # Makes the followers field editable
         }),
         ('Streaming Service Links', {
             'fields': ('spotify_link', 'apple_music_link', 'amazon_music_link', 'youtube_music_link', 
@@ -33,6 +37,10 @@ class ProfileAdmin(admin.ModelAdmin):
         }),
     )
     inlines = [LikedTracksInline]
+
+    def get_followers_count(self, obj):
+        return obj.followers.count()
+    get_followers_count.short_description = 'Followers Count'
 
 @admin.register(Track)
 class TrackAdmin(admin.ModelAdmin):
@@ -111,3 +119,12 @@ class CreditAdmin(admin.ModelAdmin):
     list_display = ('user', 'credits')
     search_fields = ('user__username',)
     readonly_fields = ('credits',)
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'track', 'content', 'created_at')
+    search_fields = ('user__username', 'track__title', 'content')
+    list_filter = ('created_at',)
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.track.title}"

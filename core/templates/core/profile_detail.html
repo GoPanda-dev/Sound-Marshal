@@ -21,6 +21,17 @@
             {% endif %}
         </div>
         <h2 class="profile-name">{{ profile.name }}</h2>
+        <h4>Followers: {{ profile.followers.count }}</h4>
+        {% if user.is_authenticated and profile.user != request.user %}
+        <form method="post" action="{% url 'profile_detail' profile.slug %}">
+            {% csrf_token %}
+            {% if is_following %}
+                <button type="submit" class="btn-unfollow">Unfollow</button>
+            {% else %}
+                <button type="submit" class="btn-follow">Follow</button>
+            {% endif %}
+        </form>
+        {% endif %}
 
         <div class="streaming-links">
             {% if profile.spotify_link %}
@@ -325,5 +336,37 @@
     .btn-play:hover {
         transform: translateY(-5px);
     }
+
+    .btn-follow, .btn-unfollow {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .btn-follow {
+        background-color: #28a745;
+        color: #fff;
+        width:150px;
+    }
+    
+    .btn-follow:hover {
+        background-color: #218838;
+    }
+    
+    .btn-unfollow {
+        background-color: #dc3545;
+        color: #fff;
+        width:150px;
+    }
+    
+    .btn-unfollow:hover {
+        background-color: #c82333;
+    }
+    
 </style>
 {% endblock %}

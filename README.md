@@ -133,8 +133,3 @@ This project belongs to Joshua Howard and all rights are reserved.
 
 If you have any questions or need further assistance, feel free to contact the project maintainers.
 ```
-
-### Usage Instructions:
-- Copy this markdown text into a `README.md` file in the root of your project.
-- Update the repository URL in the "Clone the Repository" section.
-- Replace placeholders such as `your-secret-key`, `your-stripe-secret-key`, etc., with actual values or instructions.

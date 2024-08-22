@@ -28,10 +28,13 @@ def track_detail(request, track_id):
 
     # Fetch related tracks by genre, excluding the current track
     related_tracks = Track.objects.filter(genre=track.genre).exclude(id=track.id)[:5]
+    # Fetch comments related to the track
+    comments = Comment.objects.filter(track=track).order_by('-created_at')
 
     context = {
         'track': track,
         'related_tracks': related_tracks,
+        'comments': comments,
     }
 
     return render(request, 'core/track_detail.html', context)
@@ -304,7 +307,23 @@ def campaign_overview(request):
 
 def profile_detail(request, slug):
     profile = get_object_or_404(Profile, slug=slug)
-    return render(request, 'core/profile_detail.html', {'profile': profile})
+    
+    if request.method == "POST":
+        # Toggle follow/unfollow
+        if profile.followers.filter(id=request.user.id).exists():
+            profile.followers.remove(request.user)
+        else:
+            profile.followers.add(request.user)
+        
+        return redirect('profile_detail', slug=slug)
+    
+    # Check if the current user is following this profile
+    is_following = profile.followers.filter(id=request.user.id).exists()
+    
+    return render(request, 'core/profile_detail.html', {
+        'profile': profile,
+        'is_following': is_following,
+    })
 
 @login_required
 def account_settings(request):

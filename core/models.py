@@ -1,4 +1,6 @@
 import os
+import random
+import string
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
@@ -79,6 +81,8 @@ class Profile(models.Model):
     genre = models.CharField(max_length=100, default='None')
     slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
 
+    followers = models.ManyToManyField(User, related_name='following', blank=True)
+
     liked_tracks = models.ManyToManyField('Track', related_name='liked_by', blank=True)
 
     # Profile images
@@ -128,6 +132,15 @@ class Profile(models.Model):
     @property
     def is_fan(self):
         return self.role == 'fan'  # Added property for Fan role
+    
+    def is_followed_by(self, user):
+        return self.followers.filter(id=user.id).exists()
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=6))
+            self.slug = slugify(f"{self.user.username}-{random_string}")
+        super(Profile, self).save(*args, **kwargs)
 
     
 class Track(models.Model):
