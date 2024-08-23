@@ -5,7 +5,11 @@ import dj_database_url
 
 load_dotenv()  # Load environment variables from .env file
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 SECRET_KEY = 'django-insecure-xilcnhd37a3!jg(xa-b7)qk+yzutg&iv5&30+%4d62f8bhok4('
 DEBUG = True
@@ -79,7 +83,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sound_marshal.wsgi.application'
 
-if os.getenv('PRODUCTION') == 'true':
+if os.getenv('PRODUCTION') == 'TRUE':
     # Build the connection string using individual environment variables
     DATABASE_URL = f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
     
@@ -126,8 +130,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
-STATIC_URL = 'static/'
 
 # MEDIA_URL is the URL that will serve the media files
 MEDIA_URL = '/media/'
