@@ -75,17 +75,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sound_marshal.wsgi.application'
 
-DATABASES = {
-    'default': {
+if os.getenv('PRODUCTION') == 'true':
+    # Build the connection string using individual environment variables
+    DATABASE_URL = f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+    
+    # Use the constructed DATABASE_URL for the database configuration
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL)
+    }
+else:
+    # Fallback for development or other environments
+    DATABASES = {
+        'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
-
-if os.getenv('PRODUCTION') == 'true':
-    DATABASES['default'] = dj_database_url.config(
-        default=os.getenv('DATABASE_URL')
-    )
+    
+   # DATABASES = {
+   #     'default': {
+   #         'ENGINE': 'django.db.backends.postgresql',
+   #         'NAME': os.getenv('DB_NAME'),
+   #         'USER': os.getenv('DB_USER'),
+   #         'PASSWORD': os.getenv('DB_PASSWORD'),
+   #         'HOST': os.getenv('DB_HOST'),
+   #         'PORT': os.getenv('DB_PORT', '5432'),  # Default port is 5432
+   #     }
+   # }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
