@@ -83,6 +83,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sound_marshal.wsgi.application'
 
+print("Environment Variable PRODUCTION:", os.getenv('PRODUCTION'))
+
 if os.getenv('PRODUCTION') == 'TRUE':
     # Build the connection string using individual environment variables
     DATABASE_URL = f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
@@ -92,14 +94,13 @@ if os.getenv('PRODUCTION') == 'TRUE':
         'default': dj_database_url.config(default=DATABASE_URL)
     }
 else:
-    # Fallback for development or other environments
+    print("Falling back to default SQLite database")
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-    
    # DATABASES = {
    #     'default': {
    #         'ENGINE': 'django.db.backends.postgresql',
@@ -138,8 +139,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-load_dotenv()
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
