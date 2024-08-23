@@ -23,6 +23,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.61', 'soundmarshal.azurewe
 
 CSRF_TRUSTED_ORIGINS = [
     'https://soundmarshal.azurewebsites.net',
+    'https://dev.soundly.in',
 ]
 
 INSTALLED_APPS = [
