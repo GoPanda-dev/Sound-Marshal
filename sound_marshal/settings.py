@@ -66,7 +66,7 @@ ROOT_URLCONF = 'sound_marshal.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # This line ensures Django looks in the 'templates' directory at the project root
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], # This line ensures Django looks in the 'templates' directory at the project root
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -98,7 +98,7 @@ else:
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
    # DATABASES = {
