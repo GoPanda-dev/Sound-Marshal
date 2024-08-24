@@ -9,23 +9,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const likeButton = document.getElementById('like');
     let currentTrackId = null;
 
-    let lastVolume = localStorage.getItem('audioVolume') ? parseFloat(localStorage.getItem('audioVolume')) : audioPlayer.volume;
+    
+    if (audioPlayer && playButton && overlay && volumeControl && toggleCanvasButton && canvasSection && likeButton) {
 
+    let lastVolume = localStorage.getItem('audioVolume') ? parseFloat(localStorage.getItem('audioVolume')) : audioPlayer.volume;
+    
     function loadLastPlayedTrack() {
         const lastTrackSrc = localStorage.getItem('trackSrc');
         const lastTrackArtist = localStorage.getItem('trackArtist');
         const lastTrackTitle = localStorage.getItem('trackTitle');
         const lastCoverImage = localStorage.getItem('coverImage');
         const lastTrackId = localStorage.getItem('trackId');
-    
+        const isPlaying = localStorage.getItem('isPlaying') === 'true'; 
+        
         if (lastTrackSrc) {
             audioPlayer.src = lastTrackSrc;
             audioPlayer.load();
-    
+        
             document.querySelector('.track-artist').textContent = lastTrackArtist || '';
             document.querySelector('.track-name').textContent = lastTrackTitle || '';
             currentTrackId = lastTrackId;
-    
+        
             if (lastCoverImage) {
                 overlay.style.backgroundImage = `url(${lastCoverImage})`;
             } else {
@@ -34,15 +38,11 @@ document.addEventListener('DOMContentLoaded', function () {
     
             checkIfTrackIsLiked(lastTrackId);
     
-            if (localStorage.getItem('isPlaying') === 'true') {
-                audioPlayer.play().then(() => {
-                    playButton.setAttribute('playing', 'playing');
-                }).catch(error => {
-                    console.error("Error playing audio:", error);
-                    playButton.removeAttribute('playing');
-                });
+            if (isPlaying) {
+                playButton.setAttribute('playing', 'playing');
             } else {
                 playButton.removeAttribute('playing');
+                localStorage.setItem('isPlaying', 'false');
             }
         } else {
             console.warn("No track info found in localStorage.");
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 localStorage.setItem('trackTitle', trackTitle);
                 localStorage.setItem('coverImage', coverImage);
                 localStorage.setItem('trackId', trackId);  // Store track ID in localStorage
-                localStorage.setItem('isPlaying', 'true');
+                localStorage.setItem('isPlaying', 'false');
 
                 // Update the audio player and play the track
                 audioPlayer.src = trackSrc;
@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     playButton.addEventListener('click', function () {
+    
         if (audioPlayer.paused || audioPlayer.ended) {
             audioPlayer.volume = lastVolume;
             audioPlayer.play().then(() => {
@@ -173,6 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem('isPlaying', 'false');
         }
     });
+    
 
     audioPlayer.addEventListener('ended', function () {
         playButton.removeAttribute('playing');
@@ -256,4 +258,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loadLastPlayedTrack();
     setupPlayButtons();
+    }
 });

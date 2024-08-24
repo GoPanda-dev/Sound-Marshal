@@ -33,7 +33,8 @@
         font-weight: bold;
     }
     
-    .wallet-container input[type="number"] {
+    .wallet-container input[type="number"],
+    .wallet-container input[type="text"] {
         padding: 12px;
         font-size: 18px;
         border: 2px solid #28a745;
@@ -42,7 +43,8 @@
         transition: border-color 0.3s ease;
     }
     
-    .wallet-container input[type="number"]:focus {
+    .wallet-container input[type="number"]:focus,
+    .wallet-container input[type="text"]:focus {
         border-color: #218838;
         outline: none;
     }
@@ -83,7 +85,7 @@
         font-size: 14px;
     }
 
-    #payment-request-button {
+    #express-checkout-element {
         margin-top: 20px;
     }
 
@@ -116,10 +118,13 @@
     {% endif %}
 
     <h2>Add Funds</h2>
-    <form id="payment-form" method="post" action="{% url 'purchase_credits' %}" data-no-ajax="true">
+    <form id="payment-form">
         {% csrf_token %}
         <label for="amount">Amount (USD):</label>
         <input type="number" id="amount" name="amount" min="1" required>
+
+        <label for="cardholder-name">Name on Card:</label>
+        <input type="text" id="cardholder-name" name="cardholder-name" required>
 
         <!-- Stripe Card Element -->
         <div id="card-element">
@@ -127,7 +132,7 @@
         </div>
 
         <!-- Mobile Payment Buttons -->
-        <div id="payment-request-button">
+        <div id="express-checkout-element">
             <!-- A Stripe PaymentRequestButton Element will be inserted here. -->
         </div>
 
@@ -191,6 +196,7 @@
 <script>
     const stripe = Stripe('{{ stripe_public_key }}');
     const elements = stripe.elements();
+
     const cardElement = elements.create('card');
     cardElement.mount('#card-element');
 
@@ -199,55 +205,77 @@
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        const { token, error } = await stripe.createToken(cardElement);
+        const amount = document.getElementById('amount').value;
+        const cardholderName = document.getElementById('cardholder-name').value;
 
-        if (error) {
-            const errorElement = document.getElementById('card-errors');
-            errorElement.textContent = error.message;
-        } else {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.setAttribute('type', 'hidden');
-            hiddenInput.setAttribute('name', 'stripeToken');
-            hiddenInput.setAttribute('value', token.id);
-            form.appendChild(hiddenInput);
+        try {
+            // Create the PaymentIntent on the server
+            const response = await fetch('{% url "purchase_credits" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ 
+                    amount: amount,
+                    cardholder_name: cardholderName
+                })
+            });
 
-            form.submit();
-        }
-    });
-
-    // Mobile Payment Integration (Apple Pay, Google Pay)
-    const paymentRequest = stripe.paymentRequest({
-        country: 'US',
-        currency: 'usd',
-        total: {
-            label: 'Add Funds',
-            amount: document.getElementById('amount').value * 100, // Amount in cents
-        },
-        requestPayerName: true,
-        requestPayerEmail: true,
-    });
-
-    const prButton = elements.create('paymentRequestButton', {
-        paymentRequest: paymentRequest,
-    });
-
-    // Check if the Payment Request is available
-    paymentRequest.canMakePayment().then((result) => {
-        if (result) {
-            prButton.mount('#payment-request-button');
-        } else {
-            document.getElementById('payment-request-button').style.display = 'none';
-        }
-    });
-
-    // Update total amount when the amount input changes
-    document.getElementById('amount').addEventListener('input', function() {
-        paymentRequest.update({
-            total: {
-                label: 'Add Funds',
-                amount: this.value * 100, // Update amount in cents
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
             }
-        });
+
+            const data = await response.json();
+
+            if (data.error) {
+                const errorElement = document.getElementById('card-errors');
+                errorElement.textContent = data.error;
+                return;
+            }
+
+            // Use the client_secret returned from the server
+            const { error, paymentIntent } = await stripe.confirmCardPayment(data.client_secret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: cardholderName,
+                        email: '{{ request.user.email }}',  // Automatically use the user's email from their account
+                    },
+                },
+            });
+
+            if (error) {
+                const errorElement = document.getElementById('card-errors');
+                errorElement.textContent = error.message;
+            } else {
+                // Payment succeeded, confirm it with the server
+                const confirmResponse = await fetch('/confirm-payment/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        payment_intent_id: paymentIntent.id
+                    })
+                });
+
+                const confirmData = await confirmResponse.json();
+
+                if (confirmData.success) {
+                    window.location.href = '/payment-complete';
+                } else {
+                    const errorElement = document.getElementById('card-errors');
+                    errorElement.textContent = confirmData.error || 'Payment was successful, but an error occurred during confirmation.';
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = 'An error occurred while processing your payment.';
+        }
     });
 </script>
 {% endblock %}

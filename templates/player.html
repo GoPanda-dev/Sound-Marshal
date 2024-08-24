@@ -482,23 +482,25 @@
     class MusicPlayer {
         constructor(ctx, opts) {
             this.ctx = ctx;
-            this.divider = this.constructor.DEFAULTDIVIDER
+            this.divider = this.constructor.DEFAULTDIVIDER;
             this.filter = this.constructor.DEFAULTFILTER;
-            
-            if(typeof opts.tracks === 'object'){
+    
+            if (typeof opts.tracks === 'object') {
                 this.makeTracks(opts.tracks);
             }
+    
+            this.audioSetup(); // Ensure audio is set up before anything else
+    
             this.track = document.querySelector('.track');
-            
-            this.audioSetup()
-                .tracklistControls()
+            this.tracklistControls()
                 .loadTrack()
                 .render()
                 .playCurrentTrack()
                 .changeVolume()
                 .changeTrack()
                 .events();
-            if(typeof opts.autoplay === 'boolean' && opts.autoplay){
+    
+            if (typeof opts.autoplay === 'boolean' && opts.autoplay) {
                 this.playTrack();
             }
         }
@@ -582,68 +584,55 @@
         set repeating(val) {
             this._repeating = val;
         }
-        
-        audioSetup(){
-            let audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-            let audio = document.getElementById('mp3');
-            let src = audioCtx.createMediaElementSource(audio);
-            let analyser = audioCtx.createAnalyser();
-            let data = new Uint8Array(analyser.frequencyBinCount);
-            
-            src.crossOrigin = 'anonymous';
-            src.connect(analyser);
-            analyser.connect(audioCtx.destination);
-            
-            this.audio = {
-                ctx: audioCtx,
-                el: audio,
-                src: src,
-                analyser: analyser,
-                data: data
-            };
-            
+
+        audioSetup() {
+            if (!this.audio || !this.audio.ctx) {
+                let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let audio = document.getElementById('mp3');
+                let src = audioCtx.createMediaElementSource(audio);
+                let analyser = audioCtx.createAnalyser();
+                let data = new Uint8Array(analyser.frequencyBinCount);
+    
+                src.crossOrigin = 'anonymous';
+                src.connect(analyser);
+                analyser.connect(audioCtx.destination);
+    
+                this.audio = {
+                    ctx: audioCtx,
+                    el: audio,
+                    src: src,
+                    analyser: analyser,
+                    data: data
+                };
+            }
+    
             return this;
         }
         
-        render(){
-            let Player = this;
-            Helper.render(60, function(){
-                if(!Player.audio.el.paused){
-                    Player.audio.analyser.getByteFrequencyData(Player.audio.data);
-                    let data = Helper.objectToMatrix(Player.audio.data, Player.divider);
-                    let y = data.length, x = Player.divider;
-                    while (y--) {
-                        while (x--) {
-                            let alpha = data[y][x];
-                            if ((alpha - Player.filter) > 0) {
-                                alpha = (alpha - Player.filter) / 255;
-                            } else {
-                                alpha = 0;
-                            }
-                            Player.ctx.clearRect(x * Player.w, y * Player.h, Player.w, Player.h);
-                            Player.ctx.fillStyle = 'rgba(40, 167, 69,' + alpha + ')';
-                            Player.ctx.fillRect(x * Player.w, y * Player.h, Player.w, Player.h);
-                        }
-                        x = Player.divider;
-                    }
-                }
-            });
-            return this;
+        ensureAudioContextIsResumed() {
+            if (this.audio && this.audio.ctx.state === 'suspended') {
+                this.audio.ctx.resume().then(() => {
+                    console.log('AudioContext resumed');
+                }).catch(error => {
+                    console.error('Error resuming AudioContext:', error);
+                });
+            }
         }
-        
-        playCurrentTrack(){
-            let playing = false,
-                playel = document.getElementById('play'),
+
+        playCurrentTrack() {
+            let playel = document.getElementById('play'),
                 Player = this;
-            
-            playel.addEventListener(Helper.click, function(e) {
-                if(Helper.hasClass(Player.track, 'active')){
+    
+            playel.addEventListener(Helper.click, function (e) {
+                Player.ensureAudioContextIsResumed();
+    
+                if (Helper.hasClass(Player.track, 'active')) {
                     Player.pauseTrack();
                 } else {
                     Player.playTrack();
                 }
             });
-            
+    
             return Player;
         }
         
@@ -754,22 +743,52 @@
             return this;
         }
         
-        loadTrack(autoplay){
+        loadTrack(autoplay = false) {
+            if (!this.audio || !this.audio.el) {
+                console.error("Audio element is not defined. Make sure `audioSetup` is called before `loadTrack`.");
+                return this;
+            }
+    
             this.audio.el.removeAttribute('src');
             this.audio.el.setAttribute('src', this.track.getAttribute('audio-src'));
-            // this.audioSetup();
-            
+    
             let artist = document.querySelector('.track-artist');
             let name = document.querySelector('.track-name');
-            
+    
             artist.innerText = this.track.getAttribute('artist');
             name.innerText = this.track.querySelector('span').innerText;
-            
-            if(typeof autoplay === 'boolean' && autoplay){
+    
+            if (autoplay) {
                 this.playTrack();
             }
-            
-            return this;
+    
+            return this;  // Return `this` to allow method chaining
+        }
+
+        render() {
+            let Player = this;
+            Helper.render(60, function() {
+                if (!Player.audio.el.paused) {
+                    Player.audio.analyser.getByteFrequencyData(Player.audio.data);
+                    let data = Helper.objectToMatrix(Player.audio.data, Player.divider);
+                    let y = data.length, x = Player.divider;
+                    while (y--) {
+                        while (x--) {
+                            let alpha = data[y][x];
+                            if ((alpha - Player.filter) > 0) {
+                                alpha = (alpha - Player.filter) / 255;
+                            } else {
+                                alpha = 0;
+                            }
+                            Player.ctx.clearRect(x * Player.w, y * Player.h, Player.w, Player.h);
+                            Player.ctx.fillStyle = 'rgba(40, 167, 69,' + alpha + ')';
+                            Player.ctx.fillRect(x * Player.w, y * Player.h, Player.w, Player.h);
+                        }
+                        x = Player.divider;
+                    }
+                }
+            });
+            return this;  // Return `this` to allow method chaining
         }
         
         playTrack(){
@@ -846,12 +865,12 @@
         }
     }
     
-    window.onload = function(){
-        // Get the last track information from localStorage or initialize with empty/default values
+    // Initialize the MusicPlayer on page load
+    window.onload = function () {
         let trackSrc = localStorage.getItem('trackSrc') || '';
         let trackName = localStorage.getItem('trackTitle') || '';
         let trackArtist = localStorage.getItem('trackArtist') || '';
-    
+
         let tracklist = [
             {
                 src: trackSrc,
@@ -859,16 +878,15 @@
                 artist: trackArtist
             }
         ];
-    
+
         let ctx = document.getElementById('canvas').getContext('2d');
         let player = new MusicPlayer(ctx, {
             tracks: tracklist
         });
-    
-        // Set the player to load the last played track from localStorage
+
         if (trackSrc) {
-            player.loadTrack();  // Assuming loadTrack is a method in MusicPlayer that loads the current track
+            player.loadTrack();
         }
-    }
+    };
     
 </script>

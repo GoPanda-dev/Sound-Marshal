@@ -131,14 +131,15 @@
     
         // Set up the theme toggle button
         const themeToggleBtn = document.getElementById('theme-toggle');
-    
-        themeToggleBtn.addEventListener('click', function() {
-            // Toggle the theme class on the body
-            const isDarkTheme = document.body.classList.toggle('dark-theme');
-    
-            // Save the preference in localStorage
-            localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light');
-        });
+        if(themeToggleBtn){
+            themeToggleBtn.addEventListener('click', function() {
+                // Toggle the theme class on the body
+                const isDarkTheme = document.body.classList.toggle('dark-theme');
+        
+                // Save the preference in localStorage
+                localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light');
+            });
+        };
     </script>
     <script src="{% static 'js/player-controls.js' %}"></script>
 </body>
