@@ -6,10 +6,10 @@ from azure.identity import DefaultAzureCredential
 
 load_dotenv()  # Load environment variables from .env file
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-xilcnhd37a3!jg(xa-b7)qk+yzutg&iv5&30+%4d62f8bhok4(')
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = 'True'
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -46,24 +46,18 @@ INSTALLED_APPS = [
 if os.getenv('PRODUCTION') == 'TRUE':
     # Storage settings for production using Azure Blob Storage
     STORAGES = {
-        'default': {
-            'BACKEND': 'storages.backends.azure_storage.AzureStorage',
-            'OPTIONS': {
-                'token_credential': DefaultAzureCredential(),
-                'account_name': os.getenv('AZURE_ACCOUNT_NAME'),
-                'azure_container': 'media',
-                'custom_domain': f"{os.getenv('AZURE_ACCOUNT_NAME')}.blob.core.windows.net",
-                'location': '',
+        "default": {
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "OPTIONS": {
+                "connection_string": os.getenv('STORAGE_CONNECTION_STRING'),
+                "azure_container": "media",
             },
         },
-        'staticfiles': {
-            'BACKEND': 'storages.backends.azure_storage.AzureStorage',
-            'OPTIONS': {
-                'token_credential': DefaultAzureCredential(),
-                'account_name': os.getenv('AZURE_ACCOUNT_NAME'),
-                'azure_container': 'static',
-                'custom_domain': f"{os.getenv('AZURE_ACCOUNT_NAME')}.blob.core.windows.net",
-                'location': '',
+        "staticfiles": {
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
+            "OPTIONS": {
+                "connection_string": os.getenv('STORAGE_CONNECTION_STRING'),
+                "azure_container": "static",
             },
         },
     }
