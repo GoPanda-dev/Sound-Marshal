@@ -34,4 +34,9 @@ urlpatterns = [
     path('check-if-liked/<int:track_id>/', views.check_if_liked, name='check_if_liked'),
     path('toggle-like-track/', views.toggle_like_track, name='toggle_like_track'),
     path('track/<int:track_id>/add_comment/', views.add_comment, name='add_comment'),
+
+    path('create-payment-intent/', views.create_payment_intent, name='create_payment_intent'),
+    path('webhook/', views.stripe_webhook, name='stripe_webhook'),
+    path('payment-complete/', views.payment_complete, name='payment_complete'),
+    path('confirm-payment/', views.confirm_payment, name='confirm_payment'),
 ]

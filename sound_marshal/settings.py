@@ -9,7 +9,7 @@ load_dotenv()  # Load environment variables from .env file
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-xilcnhd37a3!jg(xa-b7)qk+yzutg&iv5&30+%4d62f8bhok4(')
-DEBUG = 'True'
+DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+print("Environment Variable PRODUCTION:", os.getenv('PRODUCTION'))
 if os.getenv('PRODUCTION') == 'TRUE':
     # Storage settings for production using Azure Blob Storage
     STORAGES = {
@@ -64,6 +65,11 @@ if os.getenv('PRODUCTION') == 'TRUE':
 
     STATIC_URL = f"https://{os.getenv('AZURE_ACCOUNT_NAME')}.blob.core.windows.net/static/"
     MEDIA_URL = f"https://{os.getenv('AZURE_ACCOUNT_NAME')}.blob.core.windows.net/media/"
+
+    DATABASE_URL = f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+    DATABASES = {
+        'default': dj_database_url.config(default=DATABASE_URL)
+    }
 
     # Middleware for production
     MIDDLEWARE = [
@@ -88,6 +94,13 @@ else:
     # Media files (Uploaded by users)
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
     # Middleware for development
     MIDDLEWARE = [
@@ -137,23 +150,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'sound_marshal.wsgi.application'
-
-print("Environment Variable PRODUCTION:", os.getenv('PRODUCTION'))
-
-if os.getenv('PRODUCTION') == 'TRUE':
-    # Database configuration for production
-    DATABASE_URL = f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-    DATABASES = {
-        'default': dj_database_url.config(default=DATABASE_URL)
-    }
-else:
-    # Fallback to SQLite for local development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

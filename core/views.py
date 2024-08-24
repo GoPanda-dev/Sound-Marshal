@@ -64,47 +64,154 @@ def search(request):
 
     return render(request, 'core/search_results.html', context)
 
+def create_payment_intent(request):
+    try:
+        intent = stripe.PaymentIntent.create(
+            amount=1099,  # Amount in cents
+            currency='usd',
+            automatic_payment_methods={
+                'enabled': True,
+            },
+        )
+        return JsonResponse({
+            'client_secret': intent['client_secret']
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=403)
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError:
+        # Invalid payload
+        return JsonResponse({'status': 'invalid payload'}, status=400)
+    except stripe.error.SignatureVerificationError:
+        # Invalid signature
+        return JsonResponse({'status': 'invalid signature'}, status=400)
+
+    # Handle the event
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        handle_successful_payment(payment_intent)
+    elif event['type'] == 'payment_intent.payment_failed':
+        payment_intent = event['data']['object']
+        handle_failed_payment(payment_intent)
+    # Add other event types as needed
+
+    return JsonResponse({'status': 'success'}, status=200)
+
+def handle_successful_payment(payment_intent):
+    # Fetch user and amount from payment intent
+    user_email = payment_intent['metadata']['user_email']
+    user = User.objects.get(email=user_email)
+    amount = payment_intent['amount'] / 100  # Convert cents to dollars
+
+    # Create and save the Payment record
+    Payment.objects.create(
+        user=user,
+        amount=amount,
+        status='Completed',
+        description=f"Purchase of {amount} credits"
+    )
+
+    # Update the user's wallet balance
+    profile = user.profile
+    profile.tokens += amount  # Assuming 1 dollar = 1 token
+    profile.save()
+
+def handle_failed_payment(payment_intent):
+    # Implement any logic for failed payments, such as notifying the user
+    pass
+
+def payment_complete(request):
+    return render(request, 'core/payment_complete.html')
+
 @login_required
 @csrf_exempt
 def purchase_credits(request):
     if request.method == 'POST':
-        token = request.POST.get('stripeToken')  # Get the token from the form
-        amount = int(request.POST.get('amount'))  # Get the amount from the form (in dollars)
-        amount_in_cents = amount * 100  # Convert to cents for Stripe
-
         try:
-            charge = stripe.Charge.create(
+            data = json.loads(request.body)
+            amount = int(data.get('amount'))  # Get the amount from the form (in dollars)
+            cardholder_name = data.get('cardholder_name')
+            amount_in_cents = amount * 100  # Convert to cents for Stripe
+
+            # Create a PaymentIntent with the specified amount
+            intent = stripe.PaymentIntent.create(
                 amount=amount_in_cents,
                 currency='usd',
+                automatic_payment_methods={
+                    'enabled': True,
+                },
                 description=f"Credits for {request.user.username}",
-                source=token  # Pass the token here
+                receipt_email=request.user.email,  # Send receipt to user's email
+                metadata={'user_id': request.user.id, 'cardholder_name': cardholder_name},
             )
 
-            # Create and save the Payment record
-            Payment.objects.create(
-                user=request.user,
-                amount=amount,
-                status='Completed',  # Assuming the payment was successful
-                description=f"Purchase of {amount} credits"
-            )
+            # Return the client_secret to the frontend
+            return JsonResponse({
+                'client_secret': intent['client_secret']
+            })
 
-            # Update the user's wallet balance
-            profile = request.user.profile
-            profile.tokens += amount  # Assuming 1 dollar = 1 token
-            profile.save()
-
-            return redirect('wallet')
         except stripe.error.StripeError as e:
-            # Handle the error
-            Payment.objects.create(
-                user=request.user,
-                amount=amount,
-                status='Failed',
-                description=str(e)
-            )
-            return render(request, 'core/wallet.html', {'error': str(e), 'balance': request.user.profile.tokens})
+            # Handle Stripe-specific errors
+            return JsonResponse({'error': str(e)}, status=400)
 
-    return redirect('wallet')
+        except Exception as e:
+            # Handle general errors
+            return JsonResponse({'error': 'An error occurred while processing your request.'}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
+
+@login_required
+@csrf_exempt
+def confirm_payment(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            payment_intent_id = data.get('payment_intent_id')
+
+            # Retrieve the PaymentIntent from Stripe
+            intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+
+            if intent.status == 'succeeded':
+                # Update the user's token count
+                profile = request.user.profile
+                profile.tokens += intent.amount // 100  # Assuming 1 dollar = 1 token
+                profile.save()
+
+                # Record the payment
+                Payment.objects.create(
+                    user=request.user,
+                    amount=intent.amount / 100,  # Convert from cents to dollars
+                    status='Completed',
+                    description=f"Purchase of {intent.amount / 100} credits"
+                )
+
+                # Log the transaction
+                #Transaction.objects.create(
+                #    user=request.user,
+                #    transaction_type='credit',
+                #    amount=intent.amount // 100,  # Assuming 1 dollar = 1 token
+                #    description=f"Purchased {intent.amount // 100} credits"
+                #)
+
+                return JsonResponse({'success': True})
+
+            else:
+                return JsonResponse({'error': 'Payment not successful'}, status=400)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 @login_required
 def subscribe(request):
@@ -155,7 +262,7 @@ def wallet(request):
     return render(request, 'core/wallet.html', {
         'balance': request.user.profile.tokens,
         'history': history,
-        'stripe_public_key': settings.STRIPE_PUBLIC_KEY
+        'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
     })
 
 @login_required
