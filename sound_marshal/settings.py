@@ -35,8 +35,6 @@ INSTALLED_APPS = [
 ]
 
 if os.getenv('PRODUCTION') == 'TRUE':
-    # Production settings
-
     # Azure Storage settings
     AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
     AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
@@ -51,6 +49,14 @@ if os.getenv('PRODUCTION') == 'TRUE':
     # Media files (Uploaded by users)
     MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_MEDIA_CONTAINER}/'
     DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
+    # Set custom storage settings
+    AZURE_LOCATION = AZURE_STATIC_CONTAINER
+    STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
+    # Optionally, set cache control for static files
+    AZURE_CACHE_CONTROL = 'public, max-age=86400'
 
     MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
