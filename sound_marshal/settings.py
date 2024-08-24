@@ -7,14 +7,27 @@ load_dotenv()  # Load environment variables from .env file
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
+# Azure Storage configurations
+AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')  # Your storage account name
+AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')    # Your storage account key
+AZURE_CONTAINER = 'static'                            # The name of your static files container
+AZURE_MEDIA_CONTAINER = 'media'                       # The name of your media files container
+AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+
+STATIC_LOCATION = 'static'
+STATIC_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{STATIC_LOCATION}/'
+STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
+MEDIA_LOCATION = 'media'
+MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/'
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
+# Optionally, add these if you use collectstatic:
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# MEDIA_URL is the URL that will serve the media files
-MEDIA_URL = '/media/'
-
-# MEDIA_ROOT is the file system path where media files will be saved
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SECRET_KEY = 'django-insecure-xilcnhd37a3!jg(xa-b7)qk+yzutg&iv5&30+%4d62f8bhok4('
@@ -29,6 +42,7 @@ CSRF_TRUSTED_ORIGINS = [
 INSTALLED_APPS = [
     'core',
     'django.contrib.sites',
+    'storages',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -56,8 +70,6 @@ MIDDLEWARE = [
     'core.middleware.ProfileCreationMiddleware',
     'core.middleware.ThemeMiddleware',
 ]
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
