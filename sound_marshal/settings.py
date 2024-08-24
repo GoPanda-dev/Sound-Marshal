@@ -7,29 +7,33 @@ load_dotenv()  # Load environment variables from .env file
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Azure Storage configurations
-AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')  # Your storage account name
-AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')    # Your storage account key
-AZURE_CONTAINER = 'static'                            # The name of your static files container
-AZURE_MEDIA_CONTAINER = 'media'                       # The name of your media files container
-AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+if os.getenv('PRODUCTION') == 'TRUE':
+    # Production settings
 
-STATIC_LOCATION = 'static'
-STATIC_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{STATIC_LOCATION}/'
-STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    # Azure Storage settings
+    AZURE_ACCOUNT_NAME = os.getenv('AZURE_ACCOUNT_NAME')
+    AZURE_ACCOUNT_KEY = os.getenv('AZURE_ACCOUNT_KEY')
+    AZURE_STATIC_CONTAINER = 'static'
+    AZURE_MEDIA_CONTAINER = 'media'
+    AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
 
-MEDIA_LOCATION = 'media'
-MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/'
-DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    # Static files (CSS, JavaScript, Images)
+    STATIC_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_STATIC_CONTAINER}/'
+    STATICFILES_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 
-# Optionally, add these if you use collectstatic:
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+    # Media files (Uploaded by users)
+    MEDIA_URL = f'https://{AZURE_CUSTOM_DOMAIN}/{AZURE_MEDIA_CONTAINER}/'
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+else:
+    # Local development settings
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    # Static files (CSS, JavaScript, Images)
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+    # Media files (Uploaded by users)
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 SECRET_KEY = 'django-insecure-xilcnhd37a3!jg(xa-b7)qk+yzutg&iv5&30+%4d62f8bhok4('
 DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.61', 'soundmarshal.azurewebsites.net', 'www.soundmarshal.azurewebsites.net', 'dev.soundly.in']
