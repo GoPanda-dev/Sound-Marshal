@@ -34,6 +34,7 @@ else:
     # Media files (Uploaded by users)
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    
 SECRET_KEY = 'django-insecure-xilcnhd37a3!jg(xa-b7)qk+yzutg&iv5&30+%4d62f8bhok4('
 DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.1.61', 'soundmarshal.azurewebsites.net', 'www.soundmarshal.azurewebsites.net', 'dev.soundly.in']
