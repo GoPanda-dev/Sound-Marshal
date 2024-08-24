@@ -99,21 +99,35 @@
     <h2>Add Funds</h2>
     <form id="payment-form">
         {% csrf_token %}
-        <label for="amount">Amount (USD):</label>
-        <input type="number" id="amount" name="amount" min="1" required>
-
-        <label for="cardholder-name">Name on Card:</label>
-        <input type="text" id="cardholder-name" name="cardholder-name" required>
-
-        <!-- Stripe Card Element -->
-        <div id="card-element">
-            <!-- A Stripe Element will be inserted here. -->
+    
+        <div class="form-group">
+            <label for="amount">Amount (USD):</label>
+            <input type="number" id="amount" name="amount" min="1" required class="form-control">
         </div>
-
-        <!-- Used to display form errors. -->
-        <div id="card-errors" role="alert"></div>
-
-        <button type="submit" class="stripe-button">Add Funds</button>
+    
+        <div class="form-group">
+            <label for="cardholder-name">Name on Card:</label>
+            <input type="text" id="cardholder-name" name="cardholder-name" required class="form-control">
+        </div>
+    
+        <!-- Stripe Card Element -->
+        <div class="form-group">
+            <label for="card-element">Credit or Debit Card</label>
+            <div id="card-element" class="form-control">
+                <!-- A Stripe Element will be inserted here. -->
+            </div>
+        </div>
+    
+        <!-- Error Message Placeholder -->
+        <div id="card-errors" role="alert" class="text-danger mt-2"></div>
+    
+        <!-- Payment Request Button (Apple Pay, Google Pay, etc.) -->
+        <div id="express-checkout-element" class="mt-3">
+            <!-- The PaymentRequestButton will be inserted here. -->
+        </div>
+    
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary mt-4">Add Funds</button>
     </form>
 
     <!-- Transaction History Section -->
