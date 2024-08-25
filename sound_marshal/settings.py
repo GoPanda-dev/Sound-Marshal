@@ -48,6 +48,11 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 print("Environment Variable PRODUCTION:", os.getenv('PRODUCTION'))
 if os.getenv('PRODUCTION') == 'TRUE':
+    # settings.py
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
     # Storage settings for production using Azure Blob Storage
     STORAGES = {
         "default": {
