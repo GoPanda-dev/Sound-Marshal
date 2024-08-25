@@ -213,8 +213,8 @@ SOCIALACCOUNT_PROVIDERS = {
         'EXCHANGE_TOKEN': True,
         'LOCALE_FUNC': 'path.to.callable',  # Replace with a function that returns the desired locale
         'VERIFIED_EMAIL': False,
-        'VERSION': 'v13.0',
-        'GRAPH_API_URL': 'https://graph.facebook.com/v13.0',
+        'VERSION': 'v20.0',
+        'GRAPH_API_URL': 'https://graph.facebook.com/v20.0',
     },
     'spotify': {
         'SCOPE': [
