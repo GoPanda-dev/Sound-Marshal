@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+
+{% block content %}
+<div class="social-login-container">
+    <h2>Sign In with {{ provider.name }}</h2>
+    <p class="sub-heading">You are about to sign in using your {{ provider.name }} account.</p>
+
+    {% if auth_error %}
+        <div class="alert alert-danger">
+            <strong>Error:</strong> {{ auth_error }}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% provider_login_url provider.id process='login' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-social btn-{{ provider.id }}">
+            <i class="fab fa-{{ provider.id }}"></i> Continue with {{ provider.name }}
+        </button>
+    </form>
+
+    <p class="cancel-link">
+        {% if user.is_authenticated %}
+            <a href="{% url 'socialaccount_connections' %}">Cancel and return to connections page</a>
+        {% else %}
+            <a href="{% url 'account_login' %}">Cancel and return to login page</a>
+        {% endif %}
+    </p>
+</div>
+
+<!-- Custom CSS -->
+<style>
+    .social-login-container {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .sub-heading {
+        font-size: 14px;
+        color: #777;
+        margin-bottom: 20px;
+    }
+
+    .btn-social {
+        display: inline-block;
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 10px;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-google {
+        background-color: #db4437;
+    }
+
+    .btn-facebook {
+        background-color: #3b5998;
+    }
+    
+    .btn-spotify {
+        background-color: #1db954;
+    }
+
+    .btn-social:hover {
+        opacity: 0.9;
+    }
+
+    .cancel-link {
+        margin-top: 15px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .cancel-link a {
+        color: #5cb85c;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .cancel-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

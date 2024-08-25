@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'core',
     'django.contrib.sites',
     'storages',
+    'crispy_forms',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -42,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 print("Environment Variable PRODUCTION:", os.getenv('PRODUCTION'))
 if os.getenv('PRODUCTION') == 'TRUE':
@@ -123,12 +126,18 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-SITE_ID = 1
-LOGIN_REDIRECT_URL = '/'
+SITE_ID = int(os.getenv('SITE_ID'))
 
-ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+SOCIALACCOUNT_AUTO_SIGNUP = False
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
+SOCIALACCOUNT_ADAPTER = 'core.adapters.CustomSocialAccountAdapter'
+
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 ROOT_URLCONF = 'sound_marshal.urls'
 
@@ -140,10 +149,10 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',
+                'django.template.context_processors.request',  # This is required by allauth
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'context_processors.media_url',
+                
             ],
         },
     },
@@ -175,26 +184,47 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        'APP': {
-            'client_id': os.getenv('GOOGLE_CLIENT_ID'),
-            'secret': os.getenv('GOOGLE_CLIENT_SECRET'),
-            'key': ''
-        }
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
     },
     'facebook': {
-        'APP': {
-            'client_id': os.getenv('FACEBOOK_CLIENT_ID'),
-            'secret': os.getenv('FACEBOOK_CLIENT_SECRET'),
-            'key': ''
-        }
+        'METHOD': 'oauth2',  # Use 'js_sdk' if you prefer using the Facebook SDK
+        'SDK_URL': '//connect.facebook.net/{locale}/sdk.js',
+        'SCOPE': ['email', 'public_profile'],
+        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
+        'INIT_PARAMS': {'cookie': True},
+        'FIELDS': [
+            'id',
+            'first_name',
+            'last_name',
+            'middle_name',
+            'name',
+            'name_format',
+            'picture',
+            'short_name'
+        ],
+        'EXCHANGE_TOKEN': True,
+        'LOCALE_FUNC': 'path.to.callable',  # Replace with a function that returns the desired locale
+        'VERIFIED_EMAIL': False,
+        'VERSION': 'v13.0',
+        'GRAPH_API_URL': 'https://graph.facebook.com/v13.0',
     },
     'spotify': {
-        'APP': {
-            'client_id': os.getenv('SPOTIFY_CLIENT_ID'),
-            'secret': os.getenv('SPOTIFY_CLIENT_SECRET'),
-            'key': ''
-        }
+        'SCOPE': [
+            'user-read-email', 'user-read-private'
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
     },
+    # Add TikTok configuration here if a third-party provider is available
 }
 
 # Email settings
@@ -211,3 +241,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY')
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+

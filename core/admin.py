@@ -1,5 +1,18 @@
 from django.contrib import admin
 from .models import Profile, Track, Campaign, Submission, Transaction, Payment, Subscription, Credit, Comment
+from django.contrib.sites.models import Site
+from django.contrib.sites.admin import SiteAdmin as DefaultSiteAdmin
+
+# Unregister the existing Site model admin if it's already registered
+if admin.site.is_registered(Site):
+    admin.site.unregister(Site)
+
+# Extend the default SiteAdmin
+class SiteAdmin(DefaultSiteAdmin):
+    list_display = ('id', 'domain', 'name')  # Adding 'id' to display the Site ID
+
+# Register the Site model with the extended SiteAdmin
+admin.site.register(Site, SiteAdmin)
 
 class LikedTracksInline(admin.TabularInline):
     model = Profile.liked_tracks.through  # Manage the many-to-many relationship through the intermediary table

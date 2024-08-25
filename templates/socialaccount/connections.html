@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% load socialaccount %}
+
+{% block content %}
+<div class="account-management-container">
+    <!-- Display Error Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-danger">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <!-- Connect New Account Section -->
+    <div class="connect-account-section">
+        <h2>Connect a New Account</h2>
+        {% get_providers as social_providers %}
+        {% if social_providers %}
+            {% providers_media_js %}
+            <div class="social-login-buttons">
+                {% for provider in social_providers %}
+                    <a href="{% provider_login_url provider.id process='connect' %}" class="btn btn-social btn-{{ provider.id }}" data-no-ajax="true">
+                        <i class="fab fa-{{ provider.id }}"></i> Connect with {{ provider.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-providers">No social providers configured.</p>
+        {% endif %}
+    </div>
+    <!-- Connected Accounts Section -->
+    <div class="connected-accounts-section">
+        <h2>Manage Your Connected Accounts</h2>
+        {% get_social_accounts user as accounts %}
+        
+        {% if accounts %}
+            <ul class="connected-accounts-list">
+                {% for provider, account_list in accounts.items %}
+                    {% for account in account_list %}
+                        <li class="connected-account-item">
+                            <!-- Display Provider and Account Info -->
+                            <div class="account-info">
+                                <i class="fab fa-{{ provider }}"></i> 
+                                <strong style="margin-right: 5px">{{ provider|capfirst }}</strong> account connected as 
+                                {% if provider == "spotify" %}
+                                    {{ account.extra_data.display_name|default:"[No display name found]" }}
+                                {% else %}
+                                    {{ account.extra_data.email|default:"[No email found]" }}
+                                {% endif %}
+                            </div>
+                            <div class="account-details">
+                                {% if provider == "spotify" %}
+                                    <small>Country: {{ account.extra_data.country|default:"[No country found]" }}</small>
+                                    <small>Product: {{ account.extra_data.product|default:"[No product found]" }}</small>
+                                    <a href="{{ account.extra_data.external_urls.spotify }}" target="_blank">View Spotify Profile</a>
+                                    {% if account.extra_data.images %}
+                                        <img src="{{ account.extra_data.images.0.url }}" alt="Profile Picture" class="profile-picture">
+                                    {% endif %}
+                                {% else %}
+                                    <small>{{ account.extra_data.name|default:"[No name found]" }}</small>
+                                    <img src="{{ account.extra_data.picture|default:'' }}" alt="Profile Picture" class="profile-picture">
+                                {% endif %}
+                            </div>
+                            <form method="post" action="{% url 'socialaccount_connections' %}" class="disconnect-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="account" value="{{ account.pk }}">
+                                <button type="submit" class="btn btn-danger" data-no-ajax="true">Disconnect</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-accounts">No social accounts connected.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Custom CSS for styling and responsiveness -->
+<style>
+    .account-management-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .connected-accounts-section, .connect-account-section {
+        margin-bottom: 40px;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .connected-accounts-section h2, .connect-account-section h2 {
+        margin-bottom: 20px;
+        font-size: 22px;
+        text-align: center;
+    }
+
+    .connected-accounts-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .connected-account-item {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .account-info {
+        display: flex;
+        align-items: center;
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .account-info i {
+        font-size: 24px;
+        margin-right: 10px;
+        color: #555;
+    }
+
+    .account-details {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .account-details small {
+        font-size: 16px;
+        color: #777;
+    }
+
+    .profile-picture {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-left: 15px;
+        border: 2px solid #ddd;
+    }
+
+    .disconnect-form {
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    .no-accounts, .no-providers {
+        text-align: center;
+        font-size: 16px;
+        color: #777;
+    }
+
+    .social-login-buttons {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .social-login-buttons a {
+        display: block;
+        width: 100%;
+        max-width: 350px;
+        text-align: center;
+        margin-bottom: 10px;
+        padding: 12px;
+        border-radius: 6px;
+        color: #fff;
+        text-decoration: none;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    .social-login-buttons a:hover {
+        opacity: 0.9;
+    }
+
+    .btn-google {
+        background-color: #db4437;
+    }
+
+    .btn-facebook {
+        background-color: #3b5998;
+    }
+
+    .btn-spotify {
+        background-color: #1db954;
+    }
+
+    .btn-danger {
+        max-width: 350px;
+        background-color: #dc3545;  /* Red background color */
+        color: #ffffff;  /* White text */
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .btn-danger:hover{
+        background-color: #dc3545;  /* Red background color */
+        color: #ffffff;  /* White text */
+        opacity: 0.9;
+        transform: translateY(0);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .account-info {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .account-details {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 10px;
+        }
+
+        .profile-picture {
+            margin-left: 0;
+            margin-top: 10px;
+        }
+
+        .social-login-buttons a {
+            width: 90%;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .account-management-container {
+            padding: 15px;
+        }
+
+        .connected-account-item {
+            padding: 12px;
+        }
+
+        .social-login-buttons a {
+            font-size: 14px;
+            padding: 10px;
+        }
+    }
+</style>
+{% endblock %}

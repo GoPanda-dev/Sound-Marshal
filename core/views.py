@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
+from allauth.socialaccount.models import SocialAccount
 
 load_dotenv()  # Load environment variables from .env file
 

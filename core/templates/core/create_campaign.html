@@ -3,12 +3,102 @@
 {% block title %}Create Campaign{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="campaign-creation-container">
     <h1>Create a New Campaign</h1>
-    <form method="post" action="{% url 'create_campaign' %}" data-no-ajax="true">
+    <p class="sub-heading">Start promoting your music to curators and labels with a custom campaign.</p>
+
+    <form method="post" action="{% url 'create_campaign' %}" class="campaign-creation-form" data-no-ajax="true">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn-primary">Create Campaign</button>
+        <button type="submit" class="btn btn-primary">Create Campaign</button>
     </form>
 </div>
+
+<!-- Custom CSS for styling -->
+<style>
+    .campaign-creation-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 40px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    h1 {
+        font-size: 32px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .sub-heading {
+        font-size: 16px;
+        color: #777;
+        margin-bottom: 30px;
+    }
+
+    .campaign-creation-form {
+        text-align: left;
+    }
+
+    .campaign-creation-form input[type="text"],
+    .campaign-creation-form input[type="email"],
+    .campaign-creation-form select,
+    .campaign-creation-form textarea {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: border-color 0.3s ease;
+    }
+
+    .campaign-creation-form input[type="text"]:focus,
+    .campaign-creation-form input[type="email"]:focus,
+    .campaign-creation-form select:focus,
+    .campaign-creation-form textarea:focus {
+        border-color: #28a745;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        width: 100%;
+        padding: 14px;
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        text-align: center;
+    }
+
+    .btn-primary:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+        background-color: #1e7e34;
+        transform: translateY(0);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+        .campaign-creation-container {
+            padding: 20px;
+        }
+
+        .btn-primary {
+            font-size: 14px;
+            padding: 12px;
+        }
+    }
+</style>
 {% endblock %}
