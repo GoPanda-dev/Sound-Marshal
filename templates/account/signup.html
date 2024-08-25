@@ -5,24 +5,182 @@
 {% load socialaccount %}
 
 {% block content %}
-<h2>Sign Up</h2>
-<form method="post" action="{% url 'account_signup' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn">Sign Up</button>
-</form>
+<div class="signup-container">
+    <h2>Create Your Account</h2>
+    <p class="sub-heading">Join us and start your journey today.</p>
 
-<p>Already have an account? <a href="{% url 'account_login' %}">Login</a></p>
+    <form method="post" action="{% url 'account_signup' %}" class="signup-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-signup">Sign Up</button>
+    </form>
 
-<h3>Or sign up with:</h3>
+    <p class="login-link">Already have an account? <a href="{% url 'account_login' %}">Login</a></p>
 
-{% if socialaccount_providers %}
-    {% providers_media_js %}
-    {% for provider in socialaccount_providers %}
-        <a href="{% provider_login_url provider.id %}" class="btn">{{ provider.name }}</a><br>
-    {% endfor %}
-{% else %}
-    <p>No social providers configured.</p>
-{% endif %}
+    <div class="social-signup">
+        <h3>Or Sign Up With</h3>
+        {% get_providers as social_providers %}
+        {% if social_providers %}
+            {% providers_media_js %}
+            <div class="social-buttons">
+                {% for provider in social_providers %}
+                    <a href="{% provider_login_url provider.id %}" class="btn-social btn-{{ provider.id }}">
+                        <i class="fab fa-{{ provider.id }}"></i> Sign Up with {{ provider.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No social providers configured.</p>
+        {% endif %}
+    </div>
+</div>
 
+<!-- Custom CSS for styling -->
+<style>
+    .signup-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 40px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    h2 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .sub-heading {
+        font-size: 16px;
+        color: #777;
+        margin-bottom: 30px;
+    }
+
+    .signup-form {
+        margin-bottom: 20px;
+    }
+
+    .signup-form input[type="text"],
+    .signup-form input[type="email"],
+    .signup-form input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: border-color 0.3s ease;
+    }
+
+    .signup-form input[type="text"]:focus,
+    .signup-form input[type="email"]:focus,
+    .signup-form input[type="password"]:focus {
+        border-color: #5cb85c;
+    }
+
+    .btn-signup {
+        display: inline-block;
+        width: 100%;
+        padding: 12px;
+        background-color: #5cb85c;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-signup:hover {
+        background-color: #4cae4c;
+    }
+
+    .login-link {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #555;
+    }
+
+    .login-link a {
+        color: #5cb85c;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    .social-signup {
+        margin-top: 30px;
+    }
+
+    .social-signup h3 {
+        font-size: 20px;
+        color: #555;
+        margin-bottom: 20px;
+    }
+
+    .social-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn-social {
+        display: inline-block;
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 10px;
+        padding: 10px;
+        color: #fff;
+        border-radius: 5px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-google {
+        background-color: #db4437;
+    }
+
+    .btn-facebook {
+        background-color: #3b5998;
+    }
+    
+    .btn-spotify {
+        background-color: #1db954;
+    }
+
+    .btn-twitter {
+        background-color: #1da1f2;
+    }
+
+    .btn-social i {
+        margin-right: 8px;
+    }
+
+    .btn-social:hover {
+        opacity: 0.9;
+    }
+
+    /* Responsive design */
+    @media (max-width: 600px) {
+        .signup-container {
+            padding: 20px;
+        }
+
+        .btn-social {
+            max-width: 100%;
+        }
+    }
+</style>
 {% endblock %}

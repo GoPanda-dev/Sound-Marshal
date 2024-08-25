@@ -3,11 +3,126 @@
 {% block title %}Select Your Role{% endblock %}
 
 {% block content %}
-<h2>Select Your Role</h2>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit" name="role" value="artist" class="btn">I'm an Artist</button>
-    <button type="submit" name="role" value="curator" class="btn">I'm a Curator/Label</button>
-    <button type="submit" name="role" value="fan" class="btn">I'm a Fan</button>
-</form>
+<div class="role-selection-container">
+    <h2>Who Are You?</h2>
+    <p class="sub-heading">Choose the role that best describes you.</p>
+
+    <form method="post" class="role-selection-form">
+        {% csrf_token %}
+        <button type="submit" name="role" value="artist" class="btn btn-role btn-artist">
+            <i class="fas fa-microphone"></i> I'm an Artist
+        </button>
+        <button type="submit" name="role" value="curator" class="btn btn-role btn-curator">
+            <i class="fas fa-headphones-alt"></i> I'm a Curator/Label
+        </button>
+        <button type="submit" name="role" value="fan" class="btn btn-role btn-fan">
+            <i class="fas fa-heart"></i> I'm a Fan
+        </button>
+    </form>
+</div>
+
+<!-- Custom CSS for styling -->
+<style>
+    .role-selection-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 40px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    h2 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .sub-heading {
+        font-size: 16px;
+        color: #777;
+        margin-bottom: 30px;
+    }
+
+    .role-selection-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .btn-role {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        background-color: #5cb85c;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-role i {
+        margin-right: 10px;
+        font-size: 20px;
+    }
+
+    .btn-role:hover {
+        background-color: #4cae4c;
+        transform: translateY(-2px);
+    }
+
+    .btn-role:active {
+        background-color: #449d44;
+        transform: translateY(0);
+    }
+
+    .btn-artist {
+        background-color: #db4437;
+    }
+
+    .btn-artist:hover {
+        background-color: #c23325;
+    }
+
+    .btn-curator {
+        background-color: #4285f4;
+    }
+
+    .btn-curator:hover {
+        background-color: #3367d6;
+    }
+
+    .btn-fan {
+        background-color: #f4b400;
+    }
+
+    .btn-fan:hover {
+        background-color: #db9c00;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+        .role-selection-container {
+            padding: 20px;
+        }
+
+        .btn-role {
+            font-size: 14px;
+            padding: 12px;
+        }
+
+        .btn-role i {
+            font-size: 18px;
+        }
+    }
+</style>
 {% endblock %}

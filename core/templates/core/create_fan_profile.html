@@ -3,10 +3,100 @@
 {% block title %}Create Fan Profile{% endblock %}
 
 {% block content %}
-<h2>Create Your Fan Profile</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Save Profile</button>
-</form>
+<div class="fan-profile-creation-container">
+    <h2>Create Your Fan Profile</h2>
+    <p class="sub-heading">Join the community and connect with your favorite artists.</p>
+
+    <form method="post" class="fan-profile-creation-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Save Profile</button>
+    </form>
+</div>
+
+<!-- Custom CSS for styling -->
+<style>
+    .fan-profile-creation-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    h2 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .sub-heading {
+        font-size: 16px;
+        color: #777;
+        margin-bottom: 30px;
+    }
+
+    .fan-profile-creation-form {
+        text-align: left;
+    }
+
+    .fan-profile-creation-form input[type="text"],
+    .fan-profile-creation-form input[type="email"],
+    .fan-profile-creation-form textarea {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: border-color 0.3s ease;
+    }
+
+    .fan-profile-creation-form input[type="text"]:focus,
+    .fan-profile-creation-form input[type="email"]:focus,
+    .fan-profile-creation-form textarea:focus {
+        border-color: #17a2b8;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        width: 100%;
+        padding: 14px;
+        background-color: #17a2b8;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        text-align: center;
+    }
+
+    .btn-primary:hover {
+        background-color: #138496;
+        transform: translateY(-2px);
+    }
+
+    .btn-primary:active {
+        background-color: #117a8b;
+        transform: translateY(0);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 600px) {
+        .fan-profile-creation-container {
+            padding: 20px;
+        }
+
+        .btn-primary {
+            font-size: 14px;
+            padding: 12px;
+        }
+    }
+</style>
 {% endblock %}
