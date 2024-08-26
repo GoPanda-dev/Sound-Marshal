@@ -62,10 +62,6 @@ class Credit(models.Model):
         return f"{self.credits} credits for {self.user.username}"
 
 
-def match_curators(campaign):
-    curators = User.objects.filter(profile__role='curator', profile__genre=campaign.target_genre)
-    return curators
-
 class Profile(models.Model):
     ROLE_CHOICES = (
         ('artist', 'Artist'),
@@ -238,3 +234,7 @@ def save_user_profile(sender, instance, **kwargs):
         instance.profile.save()
     except Profile.DoesNotExist:
         Profile.objects.create(user=instance)
+
+def match_curators(campaign):
+    curators = User.objects.filter(profile__role='curator', profile__genre=campaign.target_genre)
+    return curators

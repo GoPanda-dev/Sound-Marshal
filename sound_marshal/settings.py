@@ -218,7 +218,7 @@ SOCIALACCOUNT_PROVIDERS = {
     },
     'spotify': {
         'SCOPE': [
-            'user-read-email', 'user-read-private'
+            'user-read-email', 'user-read-private', 'playlist-read-private', 'playlist-read-collaborative'
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
