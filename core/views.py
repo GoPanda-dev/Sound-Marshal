@@ -415,6 +415,8 @@ def campaign_overview(request):
 
 def profile_detail(request, slug):
     profile = get_object_or_404(Profile, slug=slug)
+    social_account = SocialAccount.objects.filter(user=profile.user, provider='spotify').first()
+    playlists = social_account.extra_data.get('playlists', []) if social_account else []
     
     if request.method == "POST":
         # Toggle follow/unfollow
@@ -431,6 +433,7 @@ def profile_detail(request, slug):
     return render(request, 'core/profile_detail.html', {
         'profile': profile,
         'is_following': is_following,
+        'playlists': playlists,
     })
 
 @login_required
