@@ -288,7 +288,7 @@ def submit_track(request, track_id):
                 submission.save()
 
                 # Deduct a token from the artist's profile
-                request.user.profile.tokens -= 1
+                request.user.profile.tokens -= 5
                 request.user.profile.save()
 
                 # Log the transaction
@@ -445,21 +445,15 @@ def account_settings(request):
         user_form = UserForm(request.POST, instance=user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=profile)
 
-        # Debugging: Check if forms are valid and print errors if any
-        if not user_form.is_valid():
-            print("User Form Errors:", user_form.errors)
-        if not profile_form.is_valid():
-            print("Profile Form Errors:", profile_form.errors)
-
+        # Check if both forms are valid
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-
             messages.success(request, "Your account settings have been updated.")
             return redirect('profile_detail', slug=profile.slug)
         else:
-            messages.error(request, "There was an error with your submission.")
-
+            # If forms are not valid, show an error message
+            messages.error(request, "There was an error with your submission. Please check the details below.")
     else:
         user_form = UserForm(instance=user)
         profile_form = ProfileForm(instance=profile)
