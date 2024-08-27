@@ -9,16 +9,12 @@
     <h2>Create Your Account</h2>
     <p class="sub-heading">Join us and start your journey today.</p>
 
-    <form method="post" action="{% url 'account_signup' %}" class="signup-form">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-signup">Sign Up</button>
-    </form>
-
-    <p class="login-link">Already have an account? <a href="{% url 'account_login' %}">Login</a></p>
-
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
     <div class="social-signup">
-        <h3>Or Sign Up With</h3>
         {% get_providers as social_providers %}
         {% if social_providers %}
             {% providers_media_js %}
@@ -33,6 +29,14 @@
             <p>No social providers configured.</p>
         {% endif %}
     </div>
+    <form method="post" action="{% url 'account_signup' %}" class="signup-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-signup">Sign Up</button>
+    </form>
+
+    <p class="login-link">Already have an account? <a href="{% url 'account_login' %}">Login</a></p>
+
 </div>
 
 <!-- Custom CSS for styling -->

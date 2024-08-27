@@ -9,14 +9,14 @@
 
     <form method="post" class="role-selection-form">
         {% csrf_token %}
+        <button type="submit" name="role" value="fan" class="btn btn-role btn-fan">
+            <i class="fas fa-heart"></i> I'm a Fan
+        </button>
         <button type="submit" name="role" value="artist" class="btn btn-role btn-artist">
             <i class="fas fa-microphone"></i> I'm an Artist
         </button>
         <button type="submit" name="role" value="curator" class="btn btn-role btn-curator">
             <i class="fas fa-headphones-alt"></i> I'm a Curator/Label
-        </button>
-        <button type="submit" name="role" value="fan" class="btn btn-role btn-fan">
-            <i class="fas fa-heart"></i> I'm a Fan
         </button>
     </form>
 </div>

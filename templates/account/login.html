@@ -11,19 +11,7 @@
             {{ form.non_field_errors }}
         </div>
     {% endif %}
-
-    <form method="post" action="{% url 'account_login' %}" class="login-form">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-login">Login</button>
-    </form>
-
-    <p class="forgot-password">
-        <a href="{% url 'account_reset_password' %}">Forgot your password?</a>
-    </p>
-
     <div class="social-login">
-        <h3>Or Sign In With</h3>
         {% get_providers as social_providers %}
         {% if social_providers %}
             {% providers_media_js %}
@@ -38,6 +26,15 @@
             <p>No social providers configured.</p>
         {% endif %}
     </div>
+    <form method="post" action="{% url 'account_login' %}" class="login-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-login">Login</button>
+    </form>
+
+    <p class="forgot-password">
+        <a href="{% url 'account_reset_password' %}">Forgot your password?</a>
+    </p>
 
     <p class="signup-link">
         Don't have an account? <a href="{% url 'account_signup' %}">Sign up now!</a>

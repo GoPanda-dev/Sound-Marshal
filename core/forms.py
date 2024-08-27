@@ -40,6 +40,32 @@ class UserForm(forms.ModelForm):
         fields = ['username', 'email']
 
 class ProfileForm(forms.ModelForm):
+    GENRE_CHOICES = [
+        ('Pop', 'Pop'),
+        ('Hip Hop', 'Hip Hop'),
+        ('Rock', 'Rock'),
+        ('Electronic', 'Electronic'),
+        ('Classical', 'Classical'),
+        ('Jazz', 'Jazz'),
+        ('Country', 'Country'),
+        ('Reggae', 'Reggae'),
+        ('Blues', 'Blues'),
+        ('Soul', 'Soul'),
+        ('R&B', 'R&B'),
+        ('Metal', 'Metal'),
+        ('Folk', 'Folk'),
+        ('Punk', 'Punk'),
+        ('Disco', 'Disco'),
+        ('Latin', 'Latin'),
+    ]
+
+    genre = forms.MultipleChoiceField(
+        choices=GENRE_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Select your genres"
+    )
+
     class Meta:
         model = Profile
         fields = [
@@ -51,6 +77,10 @@ class ProfileForm(forms.ModelForm):
             'youtube_music_link', 'deezer_link', 'tidal_link', 
             'soundcloud_link', 'pandora_link', 'audiomack_link', 'napster_link'
         ]
+    def clean_genre(self):
+        genres = self.cleaned_data.get('genre')
+        # Convert the list of selected genres to a comma-separated string
+        return ', '.join(genres)
 
     def clean_slug(self):
         slug = self.cleaned_data.get('slug')

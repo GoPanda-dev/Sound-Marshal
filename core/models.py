@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
 
 import stripe
 
@@ -68,6 +69,12 @@ class Profile(models.Model):
         ('curator', 'Curator/Label'),
         ('fan', 'Fan'),  # Added option to sign up as a Fan
     )
+
+    ALLOWED_GENRES = [
+        'Pop', 'Hip Hop', 'Rock', 'Electronic', 'Classical',
+        'Jazz', 'Country', 'Reggae', 'Blues', 'Soul',
+        'R&B', 'Metal', 'Folk', 'Punk', 'Disco', 'Latin'
+    ]
 
     tokens = models.IntegerField(default=0)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -131,6 +138,14 @@ class Profile(models.Model):
     
     def is_followed_by(self, user):
         return self.followers.filter(id=user.id).exists()
+    
+    def clean(self):
+        # Validate that the genre list only contains allowed genres
+        if self.genre:
+            genre_list = [g.strip() for g in self.genre.split(',')]
+            for genre in genre_list:
+                if genre not in self.ALLOWED_GENRES:
+                    raise ValidationError(f"Genre '{genre}' is not allowed.")
 
     def save(self, *args, **kwargs):
         if not self.slug:
