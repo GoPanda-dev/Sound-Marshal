@@ -202,9 +202,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (link) {
             const url = link.getAttribute('href');
             const noAjax = link.getAttribute('data-no-ajax');
-
+    
             if (noAjax !== 'true' && url && url !== '#' && url !== 'javascript:void(0)') {
                 event.preventDefault();
+    
+                // Update the browser's URI without reloading the page
+                history.pushState(null, '', url);
+    
                 fetch(url)
                     .then(response => response.text())
                     .then(html => {
@@ -214,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         
                         if (newContent) {
                             document.querySelector('main.container').innerHTML = newContent.innerHTML;
-                            setupPlayButtons();
+                            setupPlayButtons(); // Assuming this is a function to reinitialize event listeners or other logic
                         } else {
                             window.location.href = url; // Fallback to full page load
                         }
@@ -226,7 +230,30 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
-
+    
+    // Handle the back/forward browser buttons
+    window.addEventListener('popstate', function(event) {
+        const url = window.location.href;
+        fetch(url)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.querySelector('main.container');
+                
+                if (newContent) {
+                    document.querySelector('main.container').innerHTML = newContent.innerHTML;
+                    setupPlayButtons();
+                } else {
+                    window.location.href = url; // Fallback to full page load
+                }
+            })
+            .catch(error => {
+                console.error('Error loading content:', error);
+                window.location.href = url; // Fallback to full page load on error
+            });
+    });
+    
     const searchForm = document.querySelector('.navbar-search');
     if (searchForm) {
         searchForm.addEventListener('submit', function (event) {
