@@ -158,7 +158,7 @@
             <div class="playlist-grid">
                 {% for playlist in playlists %}
                 <div class="playlist-item">
-                    <a href="{{ playlist.external_urls.spotify }}" target="_blank">
+                    <a href="{{ playlist.external_urls.spotify }}" target="_blank" data-no-ajax="true">
                         {% if playlist.images %}
                             <img src="{{ playlist.images.0.url }}" alt="{{ playlist.name }}" class="playlist-image">
                         {% else %}
