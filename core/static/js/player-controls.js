@@ -207,7 +207,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 event.preventDefault();
     
                 // Update the browser's URI without reloading the page
-                history.pushState(null, '', url);
+                console.log('Attempting to push state:', url); // Debugging line
+
+                try {
+                    history.pushState(null, '', url);
+                    console.log('State pushed successfully'); // Debugging line
+    
+                    // Rest of your AJAX fetch logic...
+                } catch (error) {
+                    console.error('Error pushing state:', error); // Debugging line
+                }
     
                 fetch(url)
                     .then(response => response.text())
