@@ -8,10 +8,9 @@ from django.conf import settings
 from django.urls import reverse
 from requests.auth import HTTPBasicAuth
 import requests
-from allauth.socialaccount.models import SocialApp
+from allauth.socialaccount.models import SocialApp, SocialToken
 from django.shortcuts import get_object_or_404
 from allauth.socialaccount.helpers import complete_social_login
-from allauth.socialaccount.models import SocialToken
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ class SpotifyOAuth2Adapter(OAuth2Adapter):
     access_token_url = 'https://accounts.spotify.com/api/token'
     authorize_url = 'https://accounts.spotify.com/authorize'
     profile_url = 'https://api.spotify.com/v1/me'
-    playlists_url = 'https://api.spotify.com/v1/me/playlists'  # URL to get user's playlists
+    playlists_url = 'https://api.spotify.com/v1/me/playlists'
 
     def get_authorize_params(self, request, app):
         params = super().get_authorize_params(request, app)
@@ -29,46 +28,100 @@ class SpotifyOAuth2Adapter(OAuth2Adapter):
         return params
 
     def get_default_scope(self):
-        # Add the scopes that are required to access the playlists
         return ['user-read-email', 'user-read-private', 'playlist-read-private', 'playlist-read-collaborative']
 
     def complete_login(self, request, app, token, **kwargs):
-        try:
-            headers = {'Authorization': f'Bearer {token.token}'}
-            logger.debug(f"Making request to Spotify API with token: {token.token}")
-            response = requests.get(self.profile_url, headers=headers)
-            logger.debug(f"Spotify API response status code: {response.status_code}")
-            response.raise_for_status()  # This will raise an HTTPError for bad responses
-            extra_data = response.json()
+        headers = {'Authorization': f'Bearer {token.token}'}
+        response = requests.get(self.profile_url, headers=headers)
+        response.raise_for_status()
+        extra_data = response.json()
 
-            # Fetch user's playlists
-            playlists_response = requests.get(self.playlists_url, headers=headers)
-            playlists_response.raise_for_status()
-            playlists_data = playlists_response.json()
+        # Fetch user's playlists
+        playlists_response = requests.get(self.playlists_url, headers=headers)
+        playlists_response.raise_for_status()
+        playlists_data = playlists_response.json()
+        extra_data['playlists'] = playlists_data.get('items', [])
 
-            # Attach playlists data to the extra_data
-            extra_data['playlists'] = playlists_data.get('items', [])
-
-            logger.debug(f"Spotify API response data: {extra_data}")
-            social_login = self.get_provider().sociallogin_from_response(request, extra_data)
-            logger.debug("SocialLogin object created successfully.")
-            return social_login
-        except requests.exceptions.HTTPError as e:
-            logger.error(f"HTTP error during Spotify login: {e.response.status_code} - {e.response.text}")
-            raise ImmediateHttpResponse(redirect('socialaccount_connections'))
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Request error during Spotify login: {e}")
-            raise ImmediateHttpResponse(redirect('socialaccount_connections'))
+        social_login = self.get_provider().sociallogin_from_response(request, extra_data)
+        return social_login
 
     def complete_social_login(self, request, app, token, response, **kwargs):
         social_login = self.complete_login(request, app, token, **kwargs)
-        
-        # If there is an error, it would have been handled in complete_login
+
         if isinstance(social_login, ImmediateHttpResponse):
             return social_login
-        
-        logger.debug("Calling complete_social_login to finalize the account connection.")
+
+        # Retrieve the associated social app
+        social_app = get_object_or_404(SocialApp, provider=self.provider_id)
+
+        # Find existing social token or create a new one
+        social_token, created = SocialToken.objects.get_or_create(
+            account=social_login.account,
+            app=social_app,
+            defaults={
+                'token': response['access_token'],
+                'token_secret': response.get('refresh_token'),
+                'expires_at': self.parse_expiration(response['expires_in']),
+            }
+        )
+
+        # Update the token and refresh token if already exists
+        if not created:
+            social_token.token = response['access_token']
+            social_token.token_secret = response.get('refresh_token', social_token.token_secret)
+            social_token.expires_at = self.parse_expiration(response['expires_in'])
+            social_token.save()
+
         return complete_social_login(request, social_login)
+    
+    def exchange_code_for_token(self, code, app, redirect_uri):
+        """
+        Exchange the authorization code for an access token and refresh token.
+        """
+        client_id = app.client_id
+        client_secret = app.secret
+        auth_header = HTTPBasicAuth(client_id, client_secret)
+
+        data = {
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': redirect_uri
+        }
+
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        response = requests.post(self.access_token_url, data=data, headers=headers, auth=auth_header)
+        response.raise_for_status()
+
+        token_data = response.json()
+        return token_data
+
+    def refresh_access_token(self, refresh_token, app):
+        """
+        Refresh the access token using the refresh token.
+        """
+        client_id = app.client_id
+        client_secret = app.secret
+        auth_header = HTTPBasicAuth(client_id, client_secret)
+
+        data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': refresh_token
+        }
+
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        response = requests.post(self.access_token_url, data=data, headers=headers, auth=auth_header)
+        response.raise_for_status()
+
+        return response.json()
+
+    def get_callback_url(self, request, app):
+        return request.build_absolute_uri(reverse('spotify_callback'))
 
 oauth2_login = OAuth2LoginView.adapter_view(SpotifyOAuth2Adapter)
 oauth2_callback = OAuth2CallbackView.adapter_view(SpotifyOAuth2Adapter)

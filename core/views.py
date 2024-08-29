@@ -19,6 +19,9 @@ from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from allauth.socialaccount.models import SocialAccount
 
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
+
 load_dotenv()  # Load environment variables from .env file
 
 # Load Stripe API keys
@@ -295,7 +298,7 @@ def submit_track(request, track_id):
                 Transaction.objects.create(
                     user=request.user,
                     transaction_type='debit',
-                    amount=1,
+                    amount=5,
                     description=f"Submission of {track.title} to {curator.profile.name}"
                 )
 
@@ -560,14 +563,14 @@ def create_campaign(request):
                             curator=curator,
                             campaign=campaign
                         )
-                        request.user.profile.tokens -= 1
+                        request.user.profile.tokens -= 5
                         request.user.profile.save()
 
                         # Log the transaction
                         Transaction.objects.create(
                             user=request.user,
                             transaction_type='debit',
-                            amount=1,
+                            amount=5,
                             description=f"Submission of {track.title} to {curator.profile.name} in campaign {campaign.title}"
                         )
 

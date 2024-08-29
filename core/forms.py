@@ -94,4 +94,4 @@ class CampaignForm(forms.ModelForm):
 
     class Meta:
         model = Campaign
-        fields = ['title', 'description', 'target_genre', 'budget', 'curators_targeted', 'tracks']
+        fields = ['title', 'description', 'target_genre', 'curators_targeted', 'tracks']

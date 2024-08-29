@@ -9,7 +9,7 @@ load_dotenv()  # Load environment variables from .env file
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-xilcnhd37a3!jg(xa-b7)qk+yzutg&iv5&30+%4d62f8bhok4(')
-DEBUG = os.getenv('DEBUG')
+DEBUG = os.getenv('DEBUG', True)
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
@@ -27,6 +27,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 INSTALLED_APPS = [
     'core',
+    'csp',
     'django.contrib.sites',
     'storages',
     'crispy_forms',
@@ -42,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_celery_results',  # For storing task results if using Django DB backend
+    'django_celery_beat',  # For periodic tasks using Django's database
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -87,6 +90,7 @@ if os.getenv('PRODUCTION') == 'TRUE':
         'allauth.account.middleware.AccountMiddleware',
         'core.middleware.ProfileCreationMiddleware',
         'core.middleware.ThemeMiddleware',
+        'csp.middleware.CSPMiddleware',
     ]
 else:
     # Local development settings
@@ -119,6 +123,7 @@ else:
         'allauth.account.middleware.AccountMiddleware',
         'core.middleware.ProfileCreationMiddleware',
         'core.middleware.ThemeMiddleware',
+        'csp.middleware.CSPMiddleware',
     ]
 
 # Authentication backends
@@ -243,3 +248,25 @@ STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY')
 STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLIC_KEY')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 
+# Celery settings
+CELERY_BROKER_URL = 'django-db'
+CELERY_RESULT_BACKEND = 'django-db' 
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'  # Or your preferred timezone
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_RESULT_BACKEND = 'django-db'
+
+CSP_DEFAULT_SRC = [
+    "'self'", 
+    "'unsafe-inline'", 
+    'https://soundmarshaldevsa.blob.core.windows.net',
+    "https://cdnjs.cloudflare.com",
+    "https://js.stripe.com",
+    "https://fonts.gstatic.com",
+    "https://fonts.googleapis.com",
+    "https://*.scdn.co/",
+    "https://*.spotifycdn.com",
+    "https://*.googleusercontent.com",
+]
