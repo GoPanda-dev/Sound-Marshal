@@ -664,9 +664,12 @@ def explore(request):
     user_likes = user_profile.liked_tracks.values_list('id', flat=True)  # Get a list of liked track IDs
     liked_artists = user_profile.liked_tracks.values_list('artist_id', flat=True).distinct()  # Get IDs of liked artists
 
-    # Fetch tracks related to the user's genre and exclude already liked tracks
+    # Fetch profiles the user is following
+    following_profiles = Profile.objects.filter(followers=user).values_list('id', flat=True)
+
+    # Fetch tracks related to the user's genre, liked artists, and followed profiles, excluding already liked tracks
     related_tracks = Track.objects.filter(
-        Q(genre__in=user_genres) | Q(artist_id__in=liked_artists)
+        Q(genre__in=user_genres) | Q(artist_id__in=liked_artists) | Q(artist__profile__id__in=following_profiles)
     ).exclude(id__in=user_likes).select_related('artist').order_by('-upload_date')
     
     # Fetch profiles related to the user's genre, excluding the current user
@@ -684,7 +687,23 @@ def explore(request):
     track_page_obj = track_paginator.get_page(track_page_number)
     profile_page_obj = profile_paginator.get_page(profile_page_number)
 
+    # Combine the tracks and profiles into a single list
+    combined_list = []
+
+    for track in track_page_obj:
+        track.item_type = 'track'
+        combined_list.append(track)
+
+    for profile in profile_page_obj:
+        profile.item_type = 'profile'
+        combined_list.append(profile)
+
+    # Shuffle the combined list for random positioning
+    import random
+    random.shuffle(combined_list)
+
     context = {
+        'combined_list': combined_list,
         'track_page_obj': track_page_obj,
         'profile_page_obj': profile_page_obj,
     }

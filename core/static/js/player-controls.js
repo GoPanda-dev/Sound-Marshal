@@ -5,17 +5,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const volumeControl = document.getElementById('volume');
     const toggleCanvasButton = document.getElementById('toggle-canvas');
     const canvasSection = document.querySelector('.ToggleSection');
+
     const likeButton = document.getElementById('like');
-    
     let currentTrackId = null;
+
+    
+    if (audioPlayer && playButton && overlay && volumeControl && toggleCanvasButton && canvasSection && likeButton) {
+
     let lastVolume = localStorage.getItem('audioVolume') ? parseFloat(localStorage.getItem('audioVolume')) : audioPlayer.volume;
-
-    const requiredElements = [audioPlayer, playButton, overlay, volumeControl, toggleCanvasButton, canvasSection, likeButton];
-    if (requiredElements.some(el => !el)) {
-        console.warn("Missing one or more required elements.");
-        return;
-    }
-
+    
     function loadLastPlayedTrack() {
         const lastTrackSrc = localStorage.getItem('trackSrc');
         const lastTrackArtist = localStorage.getItem('trackArtist');
@@ -32,7 +30,11 @@ document.addEventListener('DOMContentLoaded', function () {
             document.querySelector('.track-name').textContent = lastTrackTitle || '';
             currentTrackId = lastTrackId;
         
-            overlay.style.backgroundImage = lastCoverImage ? `url(${lastCoverImage})` : '';
+            if (lastCoverImage) {
+                overlay.style.backgroundImage = `url(${lastCoverImage})`;
+            } else {
+                overlay.style.backgroundImage = '';
+            }
     
             checkIfTrackIsLiked(lastTrackId);
     
@@ -49,23 +51,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
     function setupPlayButtons() {
-        document.querySelector('.track-list').addEventListener('click', function (event) {
-            const button = event.target.closest('.btn-play');
-            if (button) {
+        document.querySelectorAll('.btn-play').forEach(function (button) {
+            button.addEventListener('click', function () {
                 const trackSrc = button.getAttribute('data-track-src');
                 const trackArtist = button.getAttribute('data-track-artist');
                 const trackTitle = button.getAttribute('data-track-title');
                 const coverImage = button.getAttribute('data-cover');
-                const trackId = button.getAttribute('data-track-id');
-                
-                currentTrackId = trackId;
+                const trackId = button.getAttribute('data-track-id');  // Capture the track ID
+
+                currentTrackId = trackId;  // Set currentTrackId
 
                 // Store track details in localStorage
                 localStorage.setItem('trackSrc', trackSrc);
                 localStorage.setItem('trackArtist', trackArtist);
                 localStorage.setItem('trackTitle', trackTitle);
                 localStorage.setItem('coverImage', coverImage);
-                localStorage.setItem('trackId', trackId);
+                localStorage.setItem('trackId', trackId);  // Store track ID in localStorage
                 localStorage.setItem('isPlaying', 'false');
 
                 // Update the audio player and play the track
@@ -75,9 +76,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.querySelector('.track-artist').textContent = trackArtist;
                 document.querySelector('.track-name').textContent = trackTitle;
 
-                overlay.style.backgroundImage = coverImage ? `url(${coverImage})` : '';
+                if (coverImage) {
+                    overlay.style.backgroundImage = `url(${coverImage})`;
+                } else {
+                    overlay.style.backgroundImage = '';
+                }
 
-                checkIfTrackIsLiked(trackId);
+                checkIfTrackIsLiked(trackId);  // Check if the track is liked
 
                 audioPlayer.play().then(() => {
                     playButton.setAttribute('playing', 'playing');
@@ -85,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error("Error playing audio:", error);
                     alert("Unable to play this track. Please check the audio format or URL.");
                 });
-            }
+            });
         });
     }
 
@@ -100,9 +105,9 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.is_liked) {
-                    likeButton.classList.add('liked');
+                    likeButton.classList.add('liked');  // Indicate that the track is liked
                 } else {
-                    likeButton.classList.remove('liked');
+                    likeButton.classList.remove('liked');  // Indicate that the track is not liked
                 }
             })
             .catch(error => console.error('Error checking if track is liked:', error));
@@ -137,7 +142,11 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    likeButton.classList.toggle('liked', data.liked);
+                    if (data.liked) {
+                        likeButton.classList.add('liked');  // Indicate that the track is liked
+                    } else {
+                        likeButton.classList.remove('liked');  // Indicate that the track is unliked
+                    }
                 } else {
                     console.error('Error toggling like:', data.message);
                 }
@@ -149,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     playButton.addEventListener('click', function () {
+    
         if (audioPlayer.paused || audioPlayer.ended) {
             audioPlayer.volume = lastVolume;
             audioPlayer.play().then(() => {
@@ -165,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
     
+
     audioPlayer.addEventListener('ended', function () {
         playButton.removeAttribute('playing');
         localStorage.setItem('isPlaying', 'false');
@@ -177,9 +188,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     toggleCanvasButton.addEventListener('click', function () {
-        const isCollapsed = canvasSection.style.display === 'none' || canvasSection.style.display === '';
-        canvasSection.style.display = isCollapsed ? 'block' : 'none';
-        toggleCanvasButton.classList.toggle('collapsed', !isCollapsed);
+        if (canvasSection.style.display === 'none' || canvasSection.style.display === '') {
+            canvasSection.style.display = 'block';
+            toggleCanvasButton.classList.remove('collapsed');
+        } else {
+            canvasSection.style.display = 'none';
+            toggleCanvasButton.classList.add('collapsed');
+        }
     });
 
     document.addEventListener('click', function (event) {
@@ -190,34 +205,33 @@ document.addEventListener('DOMContentLoaded', function () {
     
             if (noAjax !== 'true' && url && url !== '#' && url !== 'javascript:void(0)') {
                 event.preventDefault();
-
-                try {
-                    history.pushState(null, '', url);
-                    fetch(url)
-                        .then(response => response.text())
-                        .then(html => {
-                            const parser = new DOMParser();
-                            const doc = parser.parseFromString(html, 'text/html');
-                            const newContent = doc.querySelector('main.container');
-                            
-                            if (newContent) {
-                                document.querySelector('main.container').innerHTML = newContent.innerHTML;
-                                setupPlayButtons();
-                            } else {
-                                window.location.href = url;
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error loading content:', error);
-                            window.location.href = url;
-                        });
-                } catch (error) {
-                    console.error('Error pushing state:', error);
-                }
+    
+                // Update the browser's URI without reloading the page
+                history.pushState(null, '', url);
+    
+                fetch(url)
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newContent = doc.querySelector('main.container');
+                        
+                        if (newContent) {
+                            document.querySelector('main.container').innerHTML = newContent.innerHTML;
+                            setupPlayButtons(); // Assuming this is a function to reinitialize event listeners or other logic
+                        } else {
+                            window.location.href = url; // Fallback to full page load
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading content:', error);
+                        window.location.href = url; // Fallback to full page load on error
+                    });
             }
         }
     });
-
+    
+    // Handle the back/forward browser buttons
     window.addEventListener('popstate', function(event) {
         const url = window.location.href;
         fetch(url)
@@ -231,15 +245,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.querySelector('main.container').innerHTML = newContent.innerHTML;
                     setupPlayButtons();
                 } else {
-                    window.location.href = url;
+                    window.location.href = url; // Fallback to full page load
                 }
             })
             .catch(error => {
                 console.error('Error loading content:', error);
-                window.location.href = url;
+                window.location.href = url; // Fallback to full page load on error
             });
     });
-
+    
     const searchForm = document.querySelector('.navbar-search');
     if (searchForm) {
         searchForm.addEventListener('submit', function (event) {
@@ -259,16 +273,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.querySelector('main.container').innerHTML = newContent.innerHTML;
                         setupPlayButtons();
                     } else {
-                        window.location.href = searchUrl;
+                        window.location.href = searchUrl; // Fallback to full page load
                     }
                 })
                 .catch(error => {
                     console.error('Error loading search results:', error);
-                    window.location.href = searchUrl;
+                    window.location.href = searchUrl; // Fallback to full page load on error
                 });
         });
     }
 
     loadLastPlayedTrack();
     setupPlayButtons();
+    }
 });

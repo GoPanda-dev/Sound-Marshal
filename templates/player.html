@@ -1,45 +1,35 @@
 <div class="player">
-    <div class="current-track clearfix">
-        <div class="canvas-toggle collapsed" id="toggle-canvas">
-            <i class="fas fa-caret-down"></i>
-        </div>
+    <div class="canvas-toggle collapsed" id="toggle-canvas">
+        <i class="fas fa-caret-right"></i>
+    </div>
+    <div class="current-track clearfix ToggleSection" style="display: none;">
         <div class="track-meta">
             <h3 class="track-artist"></h3>
             <h2 class="track-name"></h2>
         </div>
-        <div class="ToggleSection" style="display: none;">
-            <div class="canvas clearfix">
-                <audio crossorigin="anonymous" id="mp3" src=""></audio>
-                <canvas id="canvas" width="256" height="256"></canvas>
-                <div style="" class="overlay" id="play"></div>
-                <input type="range" name="volume" id="volume" value="100">
-            </div>
-            <div class="controls">
-                <div class="shuffle" id="shuffle"><i class="fas fa-random"></i></div>
-                <div class="previous" id="previous"><i class="fas fa-step-backward"></i></div>
-                <div class="next" id="next"><i class="fas fa-step-forward"></i></div>
-                <div class="repeat" id="repeat"><i class="fas fa-redo"></i></div>
-                <div class="like" id="like"><i class="fas fa-heart"></i></div>
-            </div>
+        <div class="canvas clearfix">
+            <audio crossorigin="anonymous" id="mp3" src=""></audio>
+            <canvas id="canvas" width="256" height="256"></canvas>
+            <div style="" class="overlay" id="play"></div>
+            <input type="range" name="volume" id="volume" value="100">
         </div>
-    </div>
-    <div class="track-list clearfix" id="tracklist">
-        <h2 style="margin:0;" class="track-list-title">
-            Tracklist
-        </h2>
-        <div class="closer" id="tracklist-control"></div>
+        <div class="controls">
+            <div class="shuffle" id="shuffle"><i class="fas fa-random"></i></div>
+            <div class="previous" id="previous"><i class="fas fa-step-backward"></i></div>
+            <div class="next" id="next"><i class="fas fa-step-forward"></i></div>
+            <div class="repeat" id="repeat"><i class="fas fa-redo"></i></div>
+            <div class="like" id="like"><i class="fas fa-heart"></i></div>
+        </div>
+        <div class="track-list clearfix" id="tracklist">
+            <h2 style="margin:0;" class="track-list-title">Tracklist</h2>
+            <div class="closer" id="tracklist-control"></div>
+        </div>
     </div>
 </div>
 
 <style>
-    body {
-        margin: 0;
-        background: #e3e3e3;
-        font-family: 'Raleway', sans-serif;
-    }
-    
-    *, *:before, *:after {
-        box-sizing: border-box;
+    body.dark-theme .player {
+        background: #333;
     }
     
     .clearfix:before,
@@ -49,58 +39,141 @@
         display: table;
     }
     
-    .material-icons {
-        font-family: 'Material Icons';
-        font-weight: normal;
-        font-style: normal;
-        font-size: 24px;
-        display: inline-block;
-        line-height: 1;
-        text-transform: none;
-        letter-spacing: normal;
-        word-wrap: normal;
-        white-space: nowrap;
-        direction: ltr;
-        -webkit-font-smoothing: antialiased;
-        text-rendering: optimizeLegibility;
-        -moz-osx-font-smoothing: grayscale;
-        font-feature-settings: 'liga';
+    .player {
+        position: fixed;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #fff;
+        color: #000;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        min-height: 60px;
+        width: 60px;
+        margin: 0;
+        overflow: hidden;
+        padding: 0;
+        border-radius: 0 10px 10px 0;
+        transition: width 0.3s ease;
     }
     
-    .player {
-        position: relative;
+    .player.expanded {
         width: 320px;
-        background: #fff;
-        box-shadow: 0 3px 5px rgba(0,0,0,0.3);
-        min-height: 100px;
-        margin: 16px auto;
-        overflow: hidden;
-        padding-bottom: 60px;
-        border-radius:10px;
+    }
+    
+    .canvas-toggle {
+        cursor: pointer;
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .canvas-toggle i {
+        font-size: 20px;
+        color: #000;
+        transition: transform 0.3s ease;
+    }
+    
+    .canvas-toggle.collapsed i {
+        padding: 10px;
+        transform: rotate(-180deg);
     }
     
     .current-track {
+        display: none;
         text-align: center;
-        padding: 10px 0 16px 0;
+        padding: 10px 10px 16px 10px;
+        color: #000;
+    }
+    
+    .player.expanded .current-track {
+        display: block;
+    }
+    
+    .track-meta {
+        padding: 0 0 10px 0;
+    }
+    
+    .track-meta .track-artist {
+        margin: 0;
+        font-size: 14px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .track-meta .track-name {
+        margin: 0;
+        font-size: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .controls {
+        position: relative;
+        width: 100%;
+        text-align: center;
+        padding-top: 16px;
+    }
+    
+    .controls > div {
+        display: inline-block;
+        margin: 0 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+        color: #000;
+    }
+    
+    .controls > div:hover {
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+    }
+    
+    .controls > div i {
+        font-size: 24px;
+        padding: 8px;
+        transition: color 0.3s;
+    }
+    
+    .controls .active, .controls .active i {
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        color: #ff512f;
     }
     
     .track-list {
-        position: absolute;
-        top: calc(100% - 60px);
-        padding: 16px;
-        background: #f3f3f3;
-        width: 100%;
-        height: 100%;
-        box-shadow: 0 -2px 3px rgba(0,0,0,0.15);
-        overflow-y: visible;
-        transition: top 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        padding: 10px;
+        overflow-y: auto;
+        max-height: 150px;
+        text-align: left;
+        color: #000;
+        background: #fff;
     }
     
-    .track-list.active {
-        top: 0;
-        overflow: auto;
+    .track-list .track {
+        padding: 5px 0;
+        border-bottom: 1px solid #555;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
     }
     
+    .track-list .track i {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+    
+    .track-list .track span {
+        font-size: 16px;
+        flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .track-list .track.active {
+        background: rgba(81, 255, 47, 0.5);
+    }
+
     .track-list.active .closer:before {
         box-shadow: 
             -9px -9px 0 0 #333,
@@ -111,7 +184,7 @@
             6px -9px 0 0 transparent,
             9px -9px 0 0 #333;
     }
-    
+
     .closer {
         position: absolute;
         top: 10px;
@@ -159,42 +232,13 @@
             9px 6px 0 0 #333;
     }
     
-    .track-meta {
-        padding: 0 0 10px 0;
-    }
-    
-    .track-meta .track-artist {
-        margin: 0;
-        font-size: 16px;
-    }
-    
-    .track-meta .track-name {
-        margin: 0;
-        font-size: 26px;
-    }
-    
-    .controls {
-        position: relative;
-        width: 100%;
-        text-align: center;
-        padding-top: 16px;
-    }
-    
-    .controls > div {
-        display: inline-block;
-        margin: 0 8px;
+    #like {
         cursor: pointer;
-        transition: background 0.3s;
+        color: #ccc;
     }
     
-    .controls > div:hover {
-        background: rgba(0,0,0,0.2);
-    }
-    
-    .controls > div i {
-        font-size: 32px;
-        padding: 8px;
-        transition: color 0.3s;
+    #like.liked {
+        color: #e74c3c;
     }
     
     .controls .active, .controls .active i {
@@ -207,6 +251,7 @@
         margin: 0 auto;
         height: 256px;
         width: 256px;
+        transform: rotate(180deg);
     }
     
     .canvas {
@@ -337,15 +382,14 @@
         height: 16px;
         width: 16px;
     }    
-
-    /* Style for the toggle carrot */
+    
     .canvas-toggle {
         text-align: right;
         padding: 5px 10px;
         cursor: pointer;
         padding: auto;
     }
-
+    
     .canvas-toggle i {
         display: flex;
         font-size: 20px;
@@ -354,20 +398,29 @@
         justify-content: center;
         align-items: center;
     }
-
+    
     .canvas-toggle.collapsed {
         transform: rotate(-180deg);
     }
-
-    #like {
-        cursor: pointer;
-        color: #ccc; /* Default color */
-    }
     
-    #like.liked {
-        color: #e74c3c; /* Red color when liked */
-    }
 </style>
+
+<script>
+    document.getElementById('toggle-canvas').addEventListener('click', function() {
+        var player = document.querySelector('.player');
+        player.classList.toggle('expanded');
+
+        var icon = this.querySelector('i');
+        if (player.classList.contains('expanded')) {
+            icon.classList.remove('fa-caret-right');
+            icon.classList.add('fa-caret-left');
+        } else {
+            icon.classList.remove('fa-caret-left');
+            icon.classList.add('fa-caret-right');
+        }
+    });
+</script>
+
 
 <script>
     
@@ -479,414 +532,443 @@
         }
     }
     
-    class MusicPlayer {
-        constructor(ctx, opts) {
-            this.ctx = ctx;
-            this.divider = this.constructor.DEFAULTDIVIDER;
-            this.filter = this.constructor.DEFAULTFILTER;
-    
-            if (typeof opts.tracks === 'object') {
-                this.makeTracks(opts.tracks);
-            }
-    
-            this.audioSetup(); // Ensure audio is set up before anything else
-    
-            this.track = document.querySelector('.track');
-            this.tracklistControls()
-                .loadTrack()
-                .render()
-                .playCurrentTrack()
-                .changeVolume()
-                .changeTrack()
-                .events();
-    
-            if (typeof opts.autoplay === 'boolean' && opts.autoplay) {
-                this.playTrack();
-            }
-        }
-        
-        static get DEFAULTDIVIDER() {
-            return 32;
-        }
-        
-        static get DEFAULTFILTER() {
-            return 0;
-        }
-        
-        get ctx() {
-            return this._ctx;
-        }
-        
-        set ctx(val) {
-            this._ctx = val;
-        }
-        
-        get divider() {
-            return this._divider;
-        }
-        
-        set divider(val) {
-            this._divider = val;
-        }
-        
-        get filter() {
-            return this._filter;
-        }
-        
-        set filter(val) {
-            this._filter = val;
-        }
-        
-        get w(){
-            return this.ctx.canvas.width / this.divider;
-        }
-        
-        get h(){
-            return this.ctx.canvas.height / this.divider;
-        }
-        
-        get audio() {
-            return this._audio;
-        }
-        
-        set audio(val) {
-            this._audio = val;
-        }
-        
-        get track() {
-            return this._track;
-        }
-        
-        set track(val) {
-            this._track = val;
-        }
-        
-        get tracks(){
-            return this._tracks = document.querySelectorAll('.track');
-        }
-        
-        set tracks(val){
-            this._tracks = val;
-        }
-        
-        get shuffling() {
-            return this._shuffling;
-        }
-        
-        set shuffling(val) {
-            this._shuffling = val;
-        }
-        
-        get repeating() {
-            return this._repeating;
-        }
-        
-        set repeating(val) {
-            this._repeating = val;
+class MusicPlayer {
+    constructor(ctx, opts) {
+        this.ctx = ctx;
+        this.divider = 32;
+        this.filter = 0;
+
+        if (typeof opts.tracks === 'object') {
+            this.makeTracks(opts.tracks);
         }
 
-        audioSetup() {
-            if (!this.audio || !this.audio.ctx) {
-                let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                let audio = document.getElementById('mp3');
-                let src = audioCtx.createMediaElementSource(audio);
-                let analyser = audioCtx.createAnalyser();
-                let data = new Uint8Array(analyser.frequencyBinCount);
-    
-                src.crossOrigin = 'anonymous';
-                src.connect(analyser);
-                analyser.connect(audioCtx.destination);
-    
-                this.audio = {
-                    ctx: audioCtx,
-                    el: audio,
-                    src: src,
-                    analyser: analyser,
-                    data: data
-                };
-            }
-    
-            return this;
-        }
-        
-        ensureAudioContextIsResumed() {
-            if (this.audio && this.audio.ctx.state === 'suspended') {
-                this.audio.ctx.resume().then(() => {
-                    console.log('AudioContext resumed');
-                }).catch(error => {
-                    console.error('Error resuming AudioContext:', error);
-                });
-            }
-        }
+        this.audioSetup();
+        this.track = document.querySelector('.track');
+        this.tracklistControls()
+            .loadTrack()
+            .render()
+            .playCurrentTrack()
+            .changeVolume()
+            .changeTrack()
+            .events();
 
-        playCurrentTrack() {
-            let playel = document.getElementById('play'),
-                Player = this;
-    
-            playel.addEventListener(Helper.click, function (e) {
-                Player.ensureAudioContextIsResumed();
-    
-                if (Helper.hasClass(Player.track, 'active')) {
-                    Player.pauseTrack();
-                } else {
-                    Player.playTrack();
-                }
-            });
-    
-            return Player;
+        if (opts.autoplay) {
+            this.playTrack();
         }
-        
-        changeVolume() {
-            let volume = document.getElementById('volume'), Player = this;
-            volume.addEventListener('input', function() {
-                Player.audio.el.volume = this.value / 100;
-            });
-            volume.addEventListener('change', function() {
-                Player.audio.el.volume = this.value / 100;
-            });
-            
-            return this;
-        }
-        
-        tracklistControls(){
-            let control = document.getElementById('tracklist-control');
-            let tracklist = document.getElementById('tracklist');
-            control.addEventListener(Helper.click, function(e){
-                let parent = Helper.closest(e.target, '.track-list');
-                if(Helper.hasClass(parent, 'active')){
-                    Helper.removeClass(parent, 'active');
-                } else {
-                    Helper.addClass(parent, 'active');
-                }
-            });
-            return this;
-        }
-        
-        makeTrack(track, i){
-            let t = document.createElement('div');
-            t.setAttribute('track-number', i);
-            t.setAttribute('audio-src', track.src);
-            t.setAttribute('artist', track.artist);
-            Helper.addClass(t, 'track');
-            
-            let icon = document.createElement('i');
-            Helper.addClass(icon, 'material-icons');
-            icon.appendChild(document.createTextNode('play_circle_outline'));
-            
-            let name = document.createElement('span');
-            name.appendChild(document.createTextNode(track.name));
-            
-            t.appendChild(icon);
-            t.appendChild(name);
-            
-            return t;
-        }
-        
-        makeTracks(tracks){
-            let tracklist = document.querySelector('.track-list');
-            for(let i = 0, len = tracks.length; i < len; i++){
-                tracklist.appendChild(this.makeTrack(tracks[i], i));
-            }
-            this.tracks = tracks;
-        }
-        
-        changeTrack(){
-            let Player = this;
-            for(let i = 0, len = Player.tracks.length; i < len; i++){
-                Player.tracks[i].addEventListener(Helper.click, function(e) {
-                    if(Helper.hasClass(e.target, 'track')){
-                        if(Player.track != e.target){
-                            Player.track = e.target;
-                        }
-    
-                        if(Helper.hasClass(e.target, 'active')){
-                            Player.pauseTrack();
-                        } else {
-                            Player.loadTrack(true);
-                            Helper.removeClass(Helper.closest(e.target, '.track-list'), 'active');
-                        }
-                    }
-                    e.stopPropagation();
-                    return false;
-                });
-            }
-            
-            return this;
-        }
-        
-        playPreviousTrack(){
-            let current = parseInt(this.track.getAttribute('track-number'));
-            let previous = (current <= 0) ? this.tracks.length - 1 : current - 1;
-            this.track = this.tracks[previous];
-            this.loadTrack(true);
-            
-            return this;
-        }
-        
-        playNextTrack(){
-            let current = parseInt(this.track.getAttribute('track-number'));
-            let next = (current > this.tracks.length) ? 0 : current + 1;
-            this.track = this.tracks[next];
-            this.loadTrack(true);
-            
-            return this;
-        }
-        
-        shuffle(){
-            let tracknumber = Math.floor((Math.random() * this.tracks.length));
-            while(tracknumber == parseInt(this.track.getAttribute('track-number'))){
-                tracknumber = Math.floor((Math.random() * this.tracks.length));
-            }
-            this.track = this.tracks[tracknumber];
-            this.loadTrack(true);
-            
-            return this;
-        }
-        
-        loadTrack(autoplay = false) {
-            if (!this.audio || !this.audio.el) {
-                console.error("Audio element is not defined. Make sure `audioSetup` is called before `loadTrack`.");
-                return this;
-            }
-    
-            this.audio.el.removeAttribute('src');
-            this.audio.el.setAttribute('src', this.track.getAttribute('audio-src'));
-    
-            let artist = document.querySelector('.track-artist');
-            let name = document.querySelector('.track-name');
-    
-            artist.innerText = this.track.getAttribute('artist');
-            name.innerText = this.track.querySelector('span').innerText;
-    
-            if (autoplay) {
-                this.playTrack();
-            }
-    
-            return this;  // Return `this` to allow method chaining
-        }
+    }
 
-        render() {
-            let Player = this;
-            Helper.render(60, function() {
-                if (!Player.audio.el.paused) {
-                    Player.audio.analyser.getByteFrequencyData(Player.audio.data);
-                    let data = Helper.objectToMatrix(Player.audio.data, Player.divider);
-                    let y = data.length, x = Player.divider;
-                    while (y--) {
-                        while (x--) {
-                            let alpha = data[y][x];
-                            if ((alpha - Player.filter) > 0) {
-                                alpha = (alpha - Player.filter) / 255;
-                            } else {
-                                alpha = 0;
-                            }
-                            Player.ctx.clearRect(x * Player.w, y * Player.h, Player.w, Player.h);
-                            Player.ctx.fillStyle = 'rgba(40, 167, 69,' + alpha + ')';
-                            Player.ctx.fillRect(x * Player.w, y * Player.h, Player.w, Player.h);
-                        }
-                        x = Player.divider;
-                    }
-                }
-            });
-            return this;  // Return `this` to allow method chaining
+    static get DEFAULTDIVIDER() {
+        return 32;
+    }
+    
+    static get DEFAULTFILTER() {
+        return 0;
+    }
+    
+    get ctx() {
+        return this._ctx;
+    }
+    
+    set ctx(val) {
+        this._ctx = val;
+    }
+    
+    get divider() {
+        return this._divider;
+    }
+    
+    set divider(val) {
+        this._divider = val;
+    }
+    
+    get filter() {
+        return this._filter;
+    }
+    
+    set filter(val) {
+        this._filter = val;
+    }
+    
+    get w(){
+        return this.ctx.canvas.width / this.divider;
+    }
+    
+    get h(){
+        return this.ctx.canvas.height / this.divider;
+    }
+    
+    get audio() {
+        return this._audio;
+    }
+    
+    set audio(val) {
+        this._audio = val;
+    }
+    
+    get track() {
+        return this._track;
+    }
+    
+    set track(val) {
+        this._track = val;
+    }
+    
+    get tracks(){
+        return this._tracks = document.querySelectorAll('.track');
+    }
+    
+    set tracks(val){
+        this._tracks = val;
+    }
+    
+    get shuffling() {
+        return this._shuffling;
+    }
+    
+    set shuffling(val) {
+        this._shuffling = val;
+    }
+    
+    get repeating() {
+        return this._repeating;
+    }
+    
+    set repeating(val) {
+        this._repeating = val;
+    }
+
+    audioSetup() {
+        if (!this.audio || !this.audio.ctx) {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const audio = document.getElementById('mp3');
+            const src = audioCtx.createMediaElementSource(audio);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            const data = new Uint8Array(analyser.frequencyBinCount);
+
+            src.connect(analyser);
+            analyser.connect(audioCtx.destination);
+
+            this.audio = { ctx: audioCtx, el: audio, src, analyser, data };
         }
-        
-        playTrack(){
-            Helper.removeClass(this.tracks, 'active');
-            let icons = document.getElementById('tracklist').querySelectorAll('.material-icons');
-            for(let j = 0, jlen = icons.length; j < jlen; j++){
-                icons[j].innerHTML = 'play_circle_outline';
-            }
-            
-            Helper.addClass(this.track, 'active');
-            this.track.querySelector('.material-icons').innerHTML = 'pause_circle_outline';
-            this.audio.el.play();
-            this.audio.el.crossOrigin = 'anonymous';
-            this.audio.el.volume = volume.value / 100;
-            document.getElementById('play').setAttribute('playing', 'playing');
-            
-            let Player = this;
-            this.audio.el.addEventListener('ended', function(){
-                Player.audio.el.currentTime = 0;
-                Player.audio.el.pause();
-                if(Player.shuffling){
-                    Player.shuffle();
-                } else {
-                    if(parseInt(Player.audio.el.getAttribute('track-number')) < Player.tracks.length){
-                        Player.playNextTrack();
-                    } else {
-                        if(Player.repeating){
-                            Player.playNextTrack();
-                        }
-                    }
-                }
-            });
-        }
-        
-        pauseTrack(){
-            Helper.removeClass(this.track, 'active');
-            this.track.querySelector('.material-icons').innerHTML = 'play_circle_outline';
-            this.audio.el.pause();
-            document.getElementById('play').removeAttribute('playing');
-            
-            return this;
-        }
-        
-        events(){
-            let Player = this;
-            document.querySelector('.shuffle').addEventListener(Helper.click, function(e){
-                Helper.removeClass(document.querySelectorAll('.controls div'), 'active');
-                Player.repeating = false;
-                if(Player.shuffling){
-                    Player.shuffling = false;
-                } else {
-                    Player.shuffling = true;
-                    Helper.addClass(e.target, 'active');
-                }
-            });
-            document.querySelector('.repeat').addEventListener(Helper.click, function(e){
-                Helper.removeClass(document.querySelectorAll('.controls div'), 'active');
-                Player.shuffling = false;
-                if(Player.repeating){
-                    Player.repeating = false;
-                } else {
-                    Player.repeating = true;
-                    Helper.addClass(e.target, 'active');
-                }
-            });
-            document.querySelector('.next').addEventListener(Helper.click, function(){
-                Player.shuffling = false;
-                Player.playNextTrack();
-            });
-            document.querySelector('.previous').addEventListener(Helper.click, function(){
-                Player.shuffling = false;
-                Player.playPreviousTrack();
+        return this;
+    }
+
+    ensureAudioContextIsResumed() {
+        if (this.audio && this.audio.ctx.state === 'suspended') {
+            this.audio.ctx.resume().catch((error) => {
+                console.error('Error resuming AudioContext:', error);
             });
         }
     }
-    
-    // Initialize the MusicPlayer on page load
-    window.onload = function () {
-        let trackSrc = localStorage.getItem('trackSrc') || '';
-        let trackName = localStorage.getItem('trackTitle') || '';
-        let trackArtist = localStorage.getItem('trackArtist') || '';
 
-        let tracklist = [
-            {
-                src: trackSrc,
-                name: trackName,
-                artist: trackArtist
+    playCurrentTrack() {
+        const playel = document.getElementById('play');
+        const Player = this;
+
+        playel.addEventListener('click', () => {
+            Player.ensureAudioContextIsResumed();
+
+            if (Player.track.classList.contains('active')) {
+                Player.pauseTrack();
+            } else {
+                Player.playTrack();
             }
-        ];
-
-        let ctx = document.getElementById('canvas').getContext('2d');
-        let player = new MusicPlayer(ctx, {
-            tracks: tracklist
         });
 
-        if (trackSrc) {
-            player.loadTrack();
-        }
-    };
+        return Player;
+    }
+
+    changeVolume() {
+        const volume = document.getElementById('volume');
+        const Player = this;
+
+        volume.addEventListener('input', function () {
+            Player.audio.el.volume = this.value / 100;
+        });
+
+        return this;
+    }
+
+    tracklistControls(){
+        let control = document.getElementById('tracklist-control');
+        let tracklist = document.getElementById('tracklist');
+        control.addEventListener(Helper.click, function(e){
+            let parent = Helper.closest(e.target, '.track-list');
+            if(Helper.hasClass(parent, 'active')){
+                Helper.removeClass(parent, 'active');
+            } else {
+                Helper.addClass(parent, 'active');
+            }
+        });
+        return this;
+    }
     
+    makeTrack(track, i){
+        let t = document.createElement('div');
+        t.setAttribute('track-number', i);
+        t.setAttribute('audio-src', track.src);
+        t.setAttribute('artist', track.artist);
+        Helper.addClass(t, 'track');
+        
+        let icon = document.createElement('i');
+        Helper.addClass(icon, 'material-icons');
+        icon.appendChild(document.createTextNode('play_circle_outline'));
+        
+        let name = document.createElement('span');
+        name.appendChild(document.createTextNode(track.name));
+        
+        t.appendChild(icon);
+        t.appendChild(name);
+        
+        return t;
+    }
+    
+    makeTracks(tracks){
+        let tracklist = document.querySelector('.track-list');
+        for(let i = 0, len = tracks.length; i < len; i++){
+            tracklist.appendChild(this.makeTrack(tracks[i], i));
+        }
+        this.tracks = tracks;
+    }
+    
+    changeTrack(){
+        let Player = this;
+        for(let i = 0, len = Player.tracks.length; i < len; i++){
+            Player.tracks[i].addEventListener(Helper.click, function(e) {
+                if(Helper.hasClass(e.target, 'track')){
+                    if(Player.track != e.target){
+                        Player.track = e.target;
+                    }
+
+                    if(Helper.hasClass(e.target, 'active')){
+                        Player.pauseTrack();
+                    } else {
+                        Player.loadTrack(true);
+                        Helper.removeClass(Helper.closest(e.target, '.track-list'), 'active');
+                    }
+                }
+                e.stopPropagation();
+                return false;
+            });
+        }
+        
+        return this;
+    }
+
+    playPreviousTrack(){
+        let current = parseInt(this.track.getAttribute('track-number'));
+        let previous = (current <= 0) ? this.tracks.length - 1 : current - 1;
+        this.track = this.tracks[previous];
+        this.loadTrack(true);
+        
+        return this;
+    }
+    
+    playNextTrack(){
+        let current = parseInt(this.track.getAttribute('track-number'));
+        let next = (current > this.tracks.length) ? 0 : current + 1;
+        this.track = this.tracks[next];
+        this.loadTrack(true);
+        
+        return this;
+    }
+    
+    shuffle(){
+        let tracknumber = Math.floor((Math.random() * this.tracks.length));
+        while(tracknumber == parseInt(this.track.getAttribute('track-number'))){
+            tracknumber = Math.floor((Math.random() * this.tracks.length));
+        }
+        this.track = this.tracks[tracknumber];
+        this.loadTrack(true);
+        
+        return this;
+    }
+
+    tracklistControls() {
+        const control = document.getElementById('tracklist-control');
+        const tracklist = document.getElementById('tracklist');
+
+        control.addEventListener('click', (e) => {
+            const parent = e.target.closest('.track-list');
+            parent.classList.toggle('active');
+        });
+
+        return this;
+    }
+
+    makeTrack(track, i) {
+        const t = document.createElement('div');
+        t.setAttribute('track-number', i);
+        t.setAttribute('audio-src', track.src);
+        t.setAttribute('artist', track.artist);
+        t.classList.add('track');
+
+        const icon = document.createElement('i');
+        icon.classList.add('fas', 'fa-play-circle');
+
+        const name = document.createElement('span');
+        name.textContent = track.name;
+
+        t.append(icon, name);
+        return t;
+    }
+
+    makeTracks(tracks) {
+        const tracklist = document.querySelector('.track-list');
+        tracks.forEach((track, i) => {
+            tracklist.appendChild(this.makeTrack(track, i));
+        });
+        this.tracks = tracks;
+    }
+
+    changeTrack() {
+        const Player = this;
+        this.tracks.forEach((track) => {
+            track.addEventListener('click', (e) => {
+                const targetTrack = e.target.closest('.track');
+                if (targetTrack) {
+                    if (Player.track !== targetTrack) {
+                        Player.track = targetTrack;
+                    }
+
+                    if (targetTrack.classList.contains('active')) {
+                        Player.pauseTrack();
+                    } else {
+                        Player.loadTrack(true);
+                    }
+                }
+            });
+        });
+        return this;
+    }
+
+    loadTrack(autoplay = false) {
+        if (!this.audio || !this.audio.el) {
+            console.error("Audio element is not defined.");
+            return this;
+        }
+
+        this.audio.el.src = this.track.getAttribute('audio-src');
+
+        const artist = document.querySelector('.track-artist');
+        const name = document.querySelector('.track-name');
+
+        artist.textContent = this.track.getAttribute('artist');
+        name.textContent = this.track.querySelector('span').textContent;
+
+        if (autoplay) {
+            this.playTrack();
+        }
+        return this;
+    }
+
+    render() {
+        const Player = this;
+
+        function drawVisualizer() {
+            if (!Player.audio.el.paused) {
+                Player.audio.analyser.getByteFrequencyData(Player.audio.data);
+                Player.ctx.clearRect(0, 0, Player.ctx.canvas.width, Player.ctx.canvas.height);
+
+                const barWidth = (Player.ctx.canvas.width / Player.audio.data.length) * 2.5;
+                let barHeight;
+                let x = 0;
+
+                Player.audio.data.forEach((value) => {
+                    barHeight = value / 2;
+                    Player.ctx.fillStyle = `rgb(40, 167, 69)`;
+                    Player.ctx.fillRect(x, Player.ctx.canvas.height - barHeight, barWidth, barHeight);
+                    x += barWidth + 1;
+                });
+            }
+            requestAnimationFrame(drawVisualizer);
+        }
+
+        drawVisualizer();
+        return this;
+    }
+
+    playTrack() {
+        this.tracks.forEach((track) => track.classList.remove('active'));
+        const icons = document.querySelectorAll('.fas.fa-play-circle, .fas.fa-pause-circle');
+        icons.forEach((icon) => {
+            icon.classList.replace('fa-pause-circle', 'fa-play-circle');
+        });
+
+        this.track.classList.add('active');
+        this.track.querySelector('.fas').classList.replace('fa-play-circle', 'fa-pause-circle');
+        this.audio.el.play();
+
+        const Player = this;
+        this.audio.el.addEventListener('ended', () => {
+            Player.audio.el.currentTime = 0;
+            Player.audio.el.pause();
+            Player.playNextTrack();
+        });
+    }
+
+    pauseTrack() {
+        this.track.classList.remove('active');
+        this.track.querySelector('.fas').classList.replace('fa-pause-circle', 'fa-play-circle');
+        this.audio.el.pause();
+    }
+
+    playNextTrack() {
+        const currentTrackIndex = parseInt(this.track.getAttribute('track-number'));
+        const nextTrackIndex = (currentTrackIndex + 1) % this.tracks.length;
+        this.track = this.tracks[nextTrackIndex];
+        this.loadTrack(true);
+    }
+
+    playPreviousTrack() {
+        const currentTrackIndex = parseInt(this.track.getAttribute('track-number'));
+        const previousTrackIndex = (currentTrackIndex - 1 + this.tracks.length) % this.tracks.length;
+        this.track = this.tracks[previousTrackIndex];
+        this.loadTrack(true);
+    }
+
+    events() {
+        const Player = this;
+        document.querySelector('.shuffle').addEventListener('click', () => {
+            Player.shuffling = !Player.shuffling;
+        });
+
+        document.querySelector('.repeat').addEventListener('click', () => {
+            Player.repeating = !Player.repeating;
+        });
+
+        document.querySelector('.next').addEventListener('click', () => {
+            Player.playNextTrack();
+        });
+
+        document.querySelector('.previous').addEventListener('click', () => {
+            Player.playPreviousTrack();
+        });
+    }
+}
+
+window.onload = function () {
+    let trackSrc = localStorage.getItem('trackSrc') || '';
+    let trackName = localStorage.getItem('trackTitle') || '';
+    let trackArtist = localStorage.getItem('trackArtist') || '';
+
+    let tracklist = [
+        {
+            src: trackSrc,
+            name: trackName,
+            artist: trackArtist
+        }
+    ];
+
+    let ctx = document.getElementById('canvas').getContext('2d');
+    let player = new MusicPlayer(ctx, {
+        tracks: tracklist
+    });
+
+    if (trackSrc) {
+        player.loadTrack();
+    }
+};
+
 </script>

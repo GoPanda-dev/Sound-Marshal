@@ -1,171 +1,158 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 class="explore-title">Explore</h2>
-
-<div class="explore-tracks-section">
-    <h3 class="explore-section-title">Related Tracks</h3>
-    <div class="explore-tracks-grid">
-        {% for track in track_page_obj %}
-            <div class="explore-track-item">
-                {% if track.cover_image %}
-                    <button
-                        class="btn-play explore-track-cover play-button" 
-                        data-track-id="{{ track.id }}"
-                        data-track-src="{{ track.file.url }}" 
-                        data-track-artist="{{ track.artist.profile.name }}" 
-                        data-track-title="{{ track.title }}" 
-                        {% if track.cover_image %} data-cover="{{ track.cover_image.url }}" {% endif %}>
-                        <img src="{{ track.cover_image.url }}" alt="{{ track.title }} cover" class="explore-track-cover-image">
-                        <i class="fas fa-play play-icon"></i>
-                    </button>
+<div class="explore-grid">
+    {% for item in combined_list %}
+        <div class="explore-item">
+            {% if item.item_type == 'track' %}
+                <!-- This is a track with an image -->
+                {% if item.cover_image %}
+                    <a href="{% url 'track_detail' item.id %}" class="explore-cover-link">
+                        <img src="{{ item.cover_image.url }}" alt="{{ item.title }} cover" class="explore-cover-image">
+                    </a>
+                {% else %}
+                    <!-- Handle case where track has no image -->
+                    <a href="{% url 'track_detail' item.id %}" class="explore-cover-link">
+                        <div class="explore-cover-placeholder">
+                            <span>{{ item.title }}</span>
+                        </div>
+                    </a>
                 {% endif %}
-                <div class="explore-track-info">
-                    <h4 class="explore-track-title">{{ track.title }}</h4>
-                    <p class="explore-track-artist">{{ track.artist.profile.name }}</p>
-                </div>
+            {% elif item.item_type == 'profile' %}
+                <!-- This is a profile with an image -->
+                {% if item.profile_image %}
+                    <a href="{% url 'profile_detail' item.slug %}" class="explore-item-link">
+                        <img src="{{ item.profile_image.url }}" alt="{{ item.name }} profile image" class="explore-cover-image">
+                    </a>
+                {% else %}
+                    <!-- This is a profile without an image -->
+                    <a href="{% url 'profile_detail' item.slug %}" class="explore-item-link">
+                        <div class="explore-cover-placeholder">
+                            <span>{{ item.name }}</span>
+                        </div>
+                    </a>
+                {% endif %}
+            {% endif %}
+            
+            <div class="explore-info">
+                {% if item.item_type == 'track' %}
+                    <!-- Track title and artist name -->
+                    <a href="{% url 'track_detail' item.id %}">
+                        <h4 class="explore-title">{{ item.title }}</h4>
+                    </a>
+                    <p class="explore-subtitle">{{ item.artist.profile.name }}</p>
+                {% elif item.item_type == 'profile' %}
+                    <!-- Profile name and genre -->
+                    <a href="{% url 'profile_detail' item.slug %}">
+                        <span class="explore-title">{{ item.name }}</span>
+                    </a>
+                    <span class="explore-subtitle">{{ item.genre }}</span>
+                {% endif %}
             </div>
-        {% endfor %}
-    </div>
-    <div class="explore-pagination">
-        <span class="explore-step-links">
-            {% if track_page_obj.has_previous %}
-                <a href="?track_page={{ track_page_obj.previous_page_number }}">Previous</a>
-            {% endif %}
-
-            <span class="explore-current">
-                Page {{ track_page_obj.number }} of {{ track_page_obj.paginator.num_pages }}.
-            </span>
-
-            {% if track_page_obj.has_next %}
-                <a href="?track_page={{ track_page_obj.next_page_number }}">Next</a>
-            {% endif %}
-        </span>
-    </div>
+        </div>
+    {% endfor %}
 </div>
 
-<div class="explore-profiles-section">
-    <h3 class="explore-section-title">Related Profiles</h3>
-    <ul class="explore-profile-list">
-        {% for profile in profile_page_obj %}
-            <li class="explore-profile-item">
-                <a href="{% url 'profile_detail' profile.slug %}">
-                    {% if profile.profile_image %}
-                        <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }} profile image" class="explore-profile-image">
-                    {% endif %}
-                    <div class="explore-profile-info">
-                        <span class="explore-profile-name">{{ profile.name }}</span> 
-                        <span class="explore-profile-genre">{{ profile.genre }}</span>
-                    </div>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-    <div class="explore-pagination">
-        <span class="explore-step-links">
-            {% if profile_page_obj.has_previous %}
-                <a href="?profile_page={{ profile_page_obj.previous_page_number }}">Previous</a>
-            {% endif %}
+<div class="explore-pagination">
+    <span class="explore-step-links">
+        {% if track_page_obj.has_previous or profile_page_obj.has_previous %}
+            <a href="?track_page={{ track_page_obj.previous_page_number }}&profile_page={{ profile_page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
 
-            <span class="explore-current">
-                Page {{ profile_page_obj.number }} of {{ profile_page_obj.paginator.num_pages }}.
-            </span>
-
-            {% if profile_page_obj.has_next %}
-                <a href="?profile_page={{ profile_page_obj.next_page_number }}">Next</a>
-            {% endif %}
+        <span class="explore-current">
+            Page {{ track_page_obj.number }} of {{ track_page_obj.paginator.num_pages }}.
         </span>
-    </div>
+
+        {% if track_page_obj.has_next or profile_page_obj.has_next %}
+            <a href="?track_page={{ track_page_obj.next_page_number }}&profile_page={{ profile_page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </span>
 </div>
 
 <style>
     /* Explore Page Styles */
-    .explore-title {
+    h2.explore-title {
         font-size: 2.5rem;
         color: #28a745;
         margin-bottom: 1.5rem;
         text-align: center;
     }
     
-    .explore-section-title {
-        font-size: 2rem;
-        color: #333;
-        margin-bottom: 1rem;
-        border-bottom: 2px solid #28a745;
-        padding-bottom: 0.5rem;
-    }
-
-    .explore-tracks-grid {
+    .explore-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;
     }
-
-    .explore-track-item {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .explore-track-cover {
+    
+    .explore-item {
         position: relative;
         width: 100%;
-        padding-top: 100%; /* 1:1 Aspect Ratio */
+        padding-top: 100%; /* 1:1 Aspect Ratio to create a perfect square */
+        background-color: #f9f9f9;
         border-radius: 12px;
         overflow: hidden;
-        cursor: pointer;
-        border: none;
-        background: none;
-        outline: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        border: none; /* Ensure there is no border */
     }
-
-    .explore-track-cover-image {
+    
+    .explore-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .explore-cover-link {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
+        display: block;
+        text-decoration: none;
+        overflow: hidden;
+    }
+    
+    .explore-cover-image {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
+        transition: opacity 0.3s ease;
+        border-radius: 12px;
+        border: none; /* Ensure there is no border around the image */
     }
-
-    .play-icon {
+    
+    .explore-info {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 36px;
-        color: rgba(255, 255, 255, 0.8);
-        transition: color 0.3s ease;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        opacity: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        transition: opacity 0.3s ease;
     }
-
-    .btn-play:hover .play-icon {
+    
+    .explore-item:hover .explore-info {
+        opacity: 1;
+    }
+    
+    .explore-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
         color: #fff;
     }
-
-    .explore-track-info {
-        padding-top: 10px;
-        text-align: center;
+    
+    .explore-subtitle {
+        font-size: 1rem;
+        color: #ccc;
     }
-
-    .explore-track-title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 10px;
-    }
-
-    .explore-track-artist {
-        font-size: 16px;
-        color: #777;
-        margin-bottom: 10px;
-    }
-
+    
     .explore-pagination {
         text-align: center;
         margin-top: 20px;
@@ -193,24 +180,25 @@
         font-weight: bold;
         color: #555;
     }
-
+    
     /* Responsive Design */
     @media (max-width: 768px) {
-        .explore-title, .explore-section-title {
+        .explore-title {
             font-size: 1.8rem;
         }
     
-        .explore-track-item, .explore-profile-item {
-            padding: 10px;
+        .explore-item-content {
+            padding: 5px;
         }
-
-        .explore-track-title, .explore-profile-name {
+    
+        .explore-title {
             font-size: 1rem;
         }
     
-        .explore-track-artist, .explore-profile-genre {
-            font-size: 0.9rem;
+        .explore-subtitle {
+            font-size: 0.8rem;
         }
     }
+    
 </style>
 {% endblock %}
