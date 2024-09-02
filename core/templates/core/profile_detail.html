@@ -24,14 +24,14 @@
         <div class="follow-info">
             <div class="follow-item">
                 <h4>
-                    <a href="" id="followers-link">
+                    <a href="" id="followers-link" role="button">
                         Followers: <span>{{ profile.get_followers_count }}</span>
                     </a>
                 </h4>
             </div>
             <div class="follow-item">
                 <h4>
-                    <a href="" id="following-link">
+                    <a href="" id="following-link" role="button">
                         Following: <span>{{ profile.get_following_count }}</span>
                     </a>
                 </h4>
@@ -271,11 +271,6 @@ function setupModal() {
         });
     }
 }
-
-// Initialize the modal setup when the DOM content is fully loaded
-document.addEventListener('DOMContentLoaded', function () {
-    setupModal();
-});
 
 // Observe the document for changes and reinitialize the modal setup if necessary
 const observer = new MutationObserver(() => {
