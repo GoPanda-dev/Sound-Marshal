@@ -1,7 +1,49 @@
-<ul>
-    {% for profile in following %}
-    <li>{{ profile.name }}</li>
-    {% empty %}
-    <li>Not following anyone yet.</li>
-    {% endfor %}
-</ul>
+{% load static %}
+<div class="following-list">
+    {% if following %}
+        <ul class="list-unstyled">
+            {% for profile in following %}
+                <li class="following-item mb-2">
+                    <a href="{{ profile.get_absolute_url }}" class="d-flex align-items-center text-decoration-none profile-link">
+                        {% if profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }}" class="profile-image-list">
+                        {% else %}
+                            <img src="{% static 'default-profile.png' %}" alt="{{ profile.name }}" class="profile-image-list">
+                        {% endif %}
+                        <span class="following-name ms-2">{{ profile.name }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="no-following text-center py-3">
+            <p class="text-muted">Not following anyone yet.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .profile-link {
+        height: 48px; /* Consistent height for all items */
+        padding: 8px 12px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.2s ease;
+    }
+    .profile-link:hover {
+        background-color: #f0f0f0;
+    }
+    .profile-image-list {
+        border-radius: 50%;
+        width: 32px; /* Increased size slightly for better balance */
+        height: 32px;
+        object-fit: cover;
+    }
+    .following-name {
+        font-weight: 500;
+        font-size: 1rem;
+        color: #333;
+        margin-left: 5px;
+    }
+</style>
