@@ -219,6 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (newContent) {
                             document.querySelector('main.container').innerHTML = newContent.innerHTML;
                             setupPlayButtons(); // Assuming this is a function to reinitialize event listeners or other logic
+                            setupModal();
                         } else {
                             window.location.href = url; // Fallback to full page load
                         }
@@ -244,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (newContent) {
                     document.querySelector('main.container').innerHTML = newContent.innerHTML;
                     setupPlayButtons();
+                    setupModal(); 
                 } else {
                     window.location.href = url; // Fallback to full page load
                 }
@@ -272,6 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (newContent) {
                         document.querySelector('main.container').innerHTML = newContent.innerHTML;
                         setupPlayButtons();
+                        setupModal();
                     } else {
                         window.location.href = searchUrl; // Fallback to full page load
                     }
@@ -285,5 +288,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loadLastPlayedTrack();
     setupPlayButtons();
+    setupModal();
     }
 });

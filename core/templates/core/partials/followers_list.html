@@ -1,0 +1,7 @@
+<ul>
+    {% for user in followers %}
+    <li>{{ user.profile.name }}</li>
+    {% empty %}
+    <li>No followers yet.</li>
+    {% endfor %}
+</ul>

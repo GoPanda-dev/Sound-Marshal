@@ -5,7 +5,7 @@
 {% block title %}My Profile{% endblock %}
 
 {% block content %}
-<div class="profile-container">
+<div class="profile-container" data-profile-slug="{{ profile.slug }}">
     {% if profile.cover_image %}
         <div class="cover-image" style="background-image: url('{{ profile.cover_image.url }}');"></div>
     {% else %}
@@ -21,16 +21,40 @@
             {% endif %}
         </div>
         <h2 class="profile-name">{{ profile.name }}</h2>
-        <h4>Followers: {{ profile.followers.count }}</h4>
+        <div class="follow-info">
+            <div class="follow-item">
+                <h4>
+                    <a href="" id="followers-link">
+                        Followers: <span>{{ profile.get_followers_count }}</span>
+                    </a>
+                </h4>
+            </div>
+            <div class="follow-item">
+                <h4>
+                    <a href="" id="following-link">
+                        Following: <span>{{ profile.get_following_count }}</span>
+                    </a>
+                </h4>
+            </div>
+        </div>
+        
+        <!-- Modal Structure -->
+        <div id="modal" class="modal" style="">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2 id="modal-title"></h2>
+                <div id="modal-body"></div>
+            </div>
+        </div>
         {% if user.is_authenticated and profile.user != request.user %}
-        <form method="post" action="{% url 'profile_detail' profile.slug %}">
-            {% csrf_token %}
-            {% if is_following %}
-                <button type="submit" class="btn-unfollow">Unfollow</button>
-            {% else %}
-                <button type="submit" class="btn-follow">Follow</button>
-            {% endif %}
-        </form>
+            <form method="post" action="{% url 'follow_unfollow_profile' profile.slug %}">
+                {% csrf_token %}
+                {% if is_following %}
+                    <button type="submit" class="btn-unfollow">Unfollow</button>
+                {% else %}
+                    <button type="submit" class="btn-follow">Follow</button>
+                {% endif %}
+            </form>
         {% endif %}
 
         <div class="streaming-links">
@@ -175,6 +199,92 @@
     
     </div>
 </div>
+<script>
+// Function to set up modal event listeners
+function setupModal() {
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalBody = document.getElementById('modal-body');
+    const closeBtn = document.querySelector('.close-btn');
+
+    // Function to open the modal
+    function openModal(title, contentUrl) {
+        modalTitle.textContent = title;
+        modalBody.innerHTML = 'Loading...'; // Show a loading message
+        
+        fetch(contentUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(html => {
+                modalBody.innerHTML = html; // Load the fetched HTML content
+                modal.style.display = 'block'; // Display the modal
+            })
+            .catch(error => {
+                modalBody.innerHTML = 'Error loading content';
+                console.error('Error:', error);
+            });
+    }
+
+    // Close the modal when the close button is clicked
+    closeBtn.addEventListener('click', function () {
+        modal.style.display = 'none';
+    });
+
+    // Close the modal when clicking outside the modal content
+    window.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    // Function to get the current profile slug from the URL or DOM
+    function getCurrentProfileSlug() {
+        const profileSlugElement = document.querySelector('[data-profile-slug]');
+        return profileSlugElement ? profileSlugElement.getAttribute('data-profile-slug') : null;
+    }
+
+    // Event listener for "Followers" link
+    const followersLink = document.getElementById('followers-link');
+    if (followersLink) {
+        followersLink.addEventListener('click', function (event) {
+            event.preventDefault();
+            const slug = getCurrentProfileSlug();
+            if (slug) {
+                openModal('Followers', `/profile/${slug}/followers/`);
+            }
+        });
+    }
+
+    // Event listener for "Following" link
+    const followingLink = document.getElementById('following-link');
+    if (followingLink) {
+        followingLink.addEventListener('click', function (event) {
+            event.preventDefault();
+            const slug = getCurrentProfileSlug();
+            if (slug) {
+                openModal('Following', `/profile/${slug}/following/`);
+            }
+        });
+    }
+}
+
+// Initialize the modal setup when the DOM content is fully loaded
+document.addEventListener('DOMContentLoaded', function () {
+    setupModal();
+});
+
+// Observe the document for changes and reinitialize the modal setup if necessary
+const observer = new MutationObserver(() => {
+    setupModal();  // Re-initialize modal setup on DOM changes
+});
+
+// Configure observer to watch for changes in the body
+observer.observe(document.body, { childList: true, subtree: true });
+</script>
 <style>
     .playlist-section {
         margin-top: 40px;
@@ -215,6 +325,84 @@
         border-radius: 8px;
     }
 </style>
+<style>
+    .follow-info {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .follow-item {
+        text-align: center;
+    }
+    
+    .follow-item h4 {
+        font-size: 1.2rem;
+        margin: 0;
+    }
+    
+    .follow-item a {
+        text-decoration: none;
+        color: #28a745; /* Green color to match your theme */
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+    
+    .follow-item a:hover {
+        color: #218838; /* Slightly darker green on hover */
+    }
+    
+    .follow-item a span {
+        font-weight: normal;
+        color: #333;
+    }
+    
+    @media (max-width: 768px) {
+    
+        .follow-item h4 {
+            font-size: 1rem;
+        }
+    }
+    
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+    
+    .modal-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    .close-btn {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .close-btn:hover,
+    .close-btn:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    </style>
 <style>
     .profile-container {
         max-width: 95%;

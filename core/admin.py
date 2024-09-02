@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Track, Campaign, Submission, Transaction, Payment, Subscription, Credit, Comment
+from .models import Notification, Profile, Track, Campaign, Submission, Transaction, Payment, Subscription, Credit, Comment
 from django.contrib.sites.models import Site
 from django.contrib.sites.admin import SiteAdmin as DefaultSiteAdmin
 
@@ -141,3 +141,15 @@ class CommentAdmin(admin.ModelAdmin):
 
     def __str__(self):
         return f"Comment by {self.user.username} on {self.track.title}"
+    
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'notification_type', 'message', 'is_read', 'created_at', 'link')
+    list_filter = ('notification_type', 'is_read', 'created_at')
+    search_fields = ('user__username', 'message')
+    readonly_fields = ('created_at',)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related('user')
+
+admin.site.register(Notification, NotificationAdmin)

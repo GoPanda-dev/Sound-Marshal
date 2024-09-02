@@ -1,0 +1,7 @@
+<ul>
+    {% for profile in following %}
+    <li>{{ profile.name }}</li>
+    {% empty %}
+    <li>Not following anyone yet.</li>
+    {% endfor %}
+</ul>

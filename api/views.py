@@ -1,8 +1,10 @@
+from django.shortcuts import render
 from rest_framework import viewsets
-from rest_framework.exceptions import PermissionDenied
 from core.models import Transaction, Payment, Subscription, Credit, Profile, Track, Comment, Campaign, Submission
 from .serializers import TransactionSerializer, PaymentSerializer, SubscriptionSerializer, CreditSerializer, ProfileSerializer, TrackSerializer, CommentSerializer, CampaignSerializer, SubmissionSerializer
 from .permissions import IsOwnerOrReadOnly
+
+# DRF will automatically check permissions before these methods are called
 
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
@@ -13,13 +15,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this transaction.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this transaction.")
         instance.delete()
 
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -31,13 +29,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this payment.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this payment.")
         instance.delete()
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -49,13 +43,9 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this subscription.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this subscription.")
         instance.delete()
 
 class CreditViewSet(viewsets.ModelViewSet):
@@ -67,13 +57,9 @@ class CreditViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this credit.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this credit.")
         instance.delete()
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -85,13 +71,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this profile.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this profile.")
         instance.delete()
 
 class TrackViewSet(viewsets.ModelViewSet):
@@ -103,13 +85,9 @@ class TrackViewSet(viewsets.ModelViewSet):
         serializer.save(artist=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.artist != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this track.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.artist != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this track.")
         instance.delete()
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -121,13 +99,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this comment.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.user != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this comment.")
         instance.delete()
 
 class CampaignViewSet(viewsets.ModelViewSet):
@@ -139,13 +113,9 @@ class CampaignViewSet(viewsets.ModelViewSet):
         serializer.save(artist=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.artist != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this campaign.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.artist != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this campaign.")
         instance.delete()
 
 class SubmissionViewSet(viewsets.ModelViewSet):
@@ -157,11 +127,10 @@ class SubmissionViewSet(viewsets.ModelViewSet):
         serializer.save(curator=self.request.user)
 
     def perform_update(self, serializer):
-        if serializer.instance.curator != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this submission.")
         serializer.save()
 
     def perform_destroy(self, instance):
-        if instance.curator != self.request.user:
-            raise PermissionDenied("You do not have permission to delete this submission.")
         instance.delete()
+
+def api_docs(request):
+    return render(request, 'api_documentation.html')
