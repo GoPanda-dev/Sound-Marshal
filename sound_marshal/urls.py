@@ -6,10 +6,11 @@ from core.adapters import oauth2_login, oauth2_callback
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('core.urls')),  # Include core app's URLs
+    path('api/', include('api.urls')),
     path('accounts/', include('allauth.urls')),  # Include allauth URLs
     path('accounts/spotify/login/', oauth2_login, name='spotify_login'),
     path('accounts/spotify/callback/', oauth2_callback, name='spotify_callback'),
-    path('', include('core.urls')),  # Include core app's URLs
 ]
 
 handler404 = 'core.views.custom_404'

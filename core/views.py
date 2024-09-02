@@ -724,3 +724,6 @@ def home(request):
         'recommended_curators': recommended_curators,
         'recommended_artists': recommended_artists,
     })
+
+def api_docs(request):
+    return render(request, 'api_documentation.html')
