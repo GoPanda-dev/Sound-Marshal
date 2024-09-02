@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Marshal API Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #28a745;
+            border-bottom: 2px solid #28a745;
+            padding-bottom: 5px;
+        }
+        p {
+            color: #555;
+        }
+        code {
+            background-color: #eee;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #c7254e;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .endpoint {
+            margin-bottom: 20px;
+        }
+        .method {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sound Marshal API Documentation</h1>
+        <p>Welcome to the Sound Marshal API. This API allows you to interact with the platform programmatically. You can manage user profiles, tracks, transactions, payments, campaigns, submissions, and more.</p>
+
+        <h2>Authentication</h2>
+        <p>The API uses token-based authentication. To obtain an authentication token, send a POST request with your username and password to the following endpoint:</p>
+        <div class="endpoint">
+            <p><code>POST /api-token-auth/</code></p>
+            <p>Body Parameters:</p>
+            <ul>
+                <li><code>username</code>: Your username</li>
+                <li><code>password</code>: Your password</li>
+            </ul>
+            <p>Response:</p>
+            <code>{ "token": "your_generated_token" }</code>
+        </div>
+        <p>Include the token in the Authorization header of your requests:</p>
+        <code>Authorization: Token your_generated_token</code>
+
+        <h2>API Endpoints</h2>
+
+        <div class="endpoint">
+            <p class="method">GET /api/profiles/</p>
+            <p>Retrieve a list of all user profiles.</p>
+        </div>
+
+        <div class="endpoint">
+            <p class="method">POST /api/profiles/</p>
+            <p>Create a new user profile.</p>
+        </div>
+
+        <div class="endpoint">
+            <p class="method">GET /api/profiles/{id}/</p>
+            <p>Retrieve a specific user profile by ID.</p>
+        </div>
+
+        <div class="endpoint">
+            <p class="method">PUT /api/profiles/{id}/</p>
+            <p>Update a specific user profile by ID.</p>
+        </div>
+
+        <div class="endpoint">
+            <p class="method">DELETE /api/profiles/{id}/</p>
+            <p>Delete a specific user profile by ID.</p>
+        </div>
+
+        <h2>Tracks</h2>
+        <div class="endpoint">
+            <p class="method">GET /api/tracks/</p>
+            <p>Retrieve a list of all tracks.</p>
+        </div>
+
+        <div class="endpoint">
+            <p class="method">POST /api/tracks/</p>
+            <p>Upload a new track.</p>
+        </div>
+
+        <h2>Transactions</h2>
+        <div class="endpoint">
+            <p class="method">GET /api/transactions/</p>
+            <p>Retrieve a list of all transactions.</p>
+        </div>
+
+        <h2>Payments</h2>
+        <div class="endpoint">
+            <p class="method">GET /api/payments/</p>
+            <p>Retrieve a list of all payments.</p>
+        </div>
+
+        <h2>Campaigns</h2>
+        <div class="endpoint">
+            <p class="method">GET /api/campaigns/</p>
+            <p>Retrieve a list of all campaigns.</p>
+        </div>
+
+        <div class="endpoint">
+            <p class="method">POST /api/campaigns/</p>
+            <p>Create a new campaign.</p>
+        </div>
+
+        <h2>Submissions</h2>
+        <div class="endpoint">
+            <p class="method">GET /api/submissions/</p>
+            <p>Retrieve a list of all submissions.</p>
+        </div>
+
+        <div class="endpoint">
+            <p class="method">POST /api/submissions/</p>
+            <p>Create a new submission.</p>
+        </div>
+
+        <h2>Contributing</h2>
+        <p>If you would like to contribute to the development of this API, please follow the guidelines in the repository's README file.</p>
+    </div>
+</body>
+</html>

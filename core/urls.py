@@ -1,8 +1,10 @@
 from django.urls import path
 from . import views
+from django.urls import path, include
 
 urlpatterns = [
     path('', views.home, name='home'),  # Example view
+    path('api/docs/', views.api_docs, name='api_docs'),
     path('select-role/', views.select_role, name='select_role'),
     path('create-artist-profile/', views.create_artist_profile, name='create_artist_profile'),
     path('create-curator-label-profile/', views.create_curator_label_profile, name='create_curator_label_profile'),
