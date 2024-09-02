@@ -29,7 +29,6 @@ INSTALLED_APPS = [
     'api',
     'core',
     'csp',
-    'django.contrib.sites',
     'storages',
     'crispy_forms',
     'rest_framework',
@@ -44,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_celery_results',  # For storing task results if using Django DB backend
@@ -171,7 +171,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',  # This is required by allauth
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                
+                'core.context_processors.unread_notifications',
             ],
         },
     },

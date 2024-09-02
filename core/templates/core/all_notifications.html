@@ -1,0 +1,14 @@
+<!-- core/templates/core/all_notifications.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>All Notifications</h2>
+<ul class="list-group">
+    {% for notification in notifications %}
+        <li class="list-group-item {% if not notification.is_read %}font-weight-bold{% endif %}">
+            <a href="{{ notification.link }}">{{ notification.message }}</a>
+            <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

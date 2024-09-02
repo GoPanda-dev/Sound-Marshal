@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from .forms import ProfileForm, UserForm, TrackForm, FeedbackForm, SubmissionForm, CampaignForm
-from .models import Profile, Track, Submission, Campaign, Transaction, User, Comment
+from .models import Notification, Profile, Track, Submission, Campaign, Transaction, User, Comment
 import stripe
 from django.conf import settings
 from .models import Payment, Subscription, Credit
@@ -405,6 +405,16 @@ def provide_feedback(request, submission_id):
             submission = form.save(commit=False)  # Save the form but don't commit to the database yet
             submission.status = 'reviewed'  # Update the status to 'reviewed'
             submission.save()  # Save the updated submission to the database
+            
+            # Ensure notification is created only for the artist
+            if request.user != submission.track.artist:
+                Notification.objects.create(
+                    user=submission.track.artist,
+                    notification_type='feedback',
+                    message=f'New feedback provided for your track: {submission.track.title}',
+                    link=reverse('submission_detail', kwargs={'submission_id': submission.id})
+                )
+
             return redirect('curator_dashboard')  # Redirect to the dashboard or any other page
     else:
         form = FeedbackForm(instance=submission)
@@ -431,13 +441,34 @@ def profile_detail(request, slug):
         return redirect('profile_detail', slug=slug)
     
     # Check if the current user is following this profile
-    is_following = profile.followers.filter(id=request.user.id).exists()
+    is_following = profile.is_followed_by(request.user)
     
     return render(request, 'core/profile_detail.html', {
         'profile': profile,
         'is_following': is_following,
         'playlists': playlists,
     })
+
+@login_required
+def follow_unfollow_profile(request, slug):
+    profile = get_object_or_404(Profile, slug=slug)
+    if request.method == "POST":
+        if profile.is_followed_by(request.user):
+            profile.remove_follower(request.user)
+        else:
+            profile.add_follower(request.user)
+    return redirect('profile_detail', slug=profile.slug)
+
+def profile_followers(request, slug):
+    profile = get_object_or_404(Profile, slug=slug)
+    followers = profile.followers.all()
+    return render(request, 'core/partials/followers_list.html', {'followers': followers})
+
+def profile_following(request, slug):
+    profile = get_object_or_404(Profile, slug=slug)
+    following_profiles = Profile.objects.filter(followers=profile.user)
+    return render(request, 'core/partials/following_list.html', {'following': following_profiles})
+
 
 @login_required
 def account_settings(request):
@@ -725,5 +756,53 @@ def home(request):
         'recommended_artists': recommended_artists,
     })
 
-def api_docs(request):
-    return render(request, 'api_documentation.html')
+@require_POST
+def mark_notification_as_read(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    
+    if notification.is_read:
+        return JsonResponse({'success': False, 'message': 'Notification already read'})
+    
+    notification.is_read = True
+    notification.save()
+
+    # Optional: Return the count of unread notifications if needed
+    unread_count = Notification.objects.filter(user=request.user, is_read=False).count()
+    return JsonResponse({'success': True, 'unread_count': unread_count})
+
+@login_required
+def all_notifications(request):
+    if request.user.is_authenticated:
+        notifications = request.user.notifications.all().order_by('-created_at')
+
+        # Mark all notifications as read
+        notifications.update(is_read=True)
+
+        # Optionally, update the unread notifications count in the session or context
+        request.user.unread_notifications_count = 0
+
+    else:
+        notifications = []
+
+    return render(request, 'core/all_notifications.html', {'notifications': notifications})
+
+@login_required
+def fetch_notifications(request):
+    notifications = request.user.notifications.order_by('-created_at')[:10]
+    unread_count = request.user.notifications.filter(is_read=False).count()
+
+    notifications_data = []
+    for notification in notifications:
+        notifications_data.append({
+            'id': notification.id,
+            'message': notification.message,
+            'link': notification.link,
+            'is_read': notification.is_read,
+            'created_at': notification.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'timesince': notification.created_at.strftime('%b %d, %H:%M')
+        })
+
+    return JsonResponse({
+        'notifications': notifications_data,
+        'unread_count': unread_count
+    })

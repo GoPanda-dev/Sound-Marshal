@@ -84,7 +84,7 @@ class Profile(models.Model):
     genre = models.CharField(max_length=100, default='None')
     slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
 
-    followers = models.ManyToManyField(User, related_name='following', blank=True)
+    followers = models.ManyToManyField(User, related_name='following', blank=True, symmetrical=False)
 
     liked_tracks = models.ManyToManyField('Track', related_name='liked_by', blank=True)
 
@@ -138,7 +138,37 @@ class Profile(models.Model):
     
     def is_followed_by(self, user):
         return self.followers.filter(id=user.id).exists()
+
+    def get_followers_count(self):
+        return self.followers.count()
+
+    def get_following_count(self):
+        # Number of profiles the user is following
+        return Profile.objects.filter(followers=self.user).count()
+
+    def get_following_profiles(self):
+        # Return profiles that the user is following
+        return Profile.objects.filter(followers=self.user)
     
+    def add_follower(self, follower):
+        if not self.is_followed_by(follower):
+            self.followers.add(follower)
+            self.create_follow_notification(follower)
+            self.save()
+
+    def remove_follower(self, follower):
+        if self.is_followed_by(follower):
+            self.followers.remove(follower)
+            self.save()
+
+    def create_follow_notification(self, follower):
+        Notification.objects.create(
+            user=self.user,  # The user being followed
+            notification_type='follow',
+            message=f"{follower.username} has started following you!",
+            link=reverse('profile_detail', kwargs={'slug': follower.profile.slug})
+        )
+
     def clean(self):
         # Validate that the genre list only contains allowed genres
         if self.genre:
@@ -227,10 +257,18 @@ class Submission(models.Model):
         return f"{self.track.title} to {self.curator.username}"
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None  # Check if this is a new submission
         super().save(*args, **kwargs)
-        self.notify_curator()
+        if is_new:
+            self.notify_curator()
 
     def notify_curator(self):
+        Notification.objects.create(
+            user=self.curator,
+            notification_type='submission',
+            message=f"New submission: {self.track.title}",
+            link=reverse('submission_detail', kwargs={'submission_id': self.pk})
+        )
         subject = f"New Submission: {self.track.title}"
         html_message = render_to_string('emails/new_submission.html', {'submission': self})
         plain_message = strip_tags(html_message)
@@ -253,3 +291,25 @@ def save_user_profile(sender, instance, **kwargs):
 def match_curators(campaign):
     curators = User.objects.filter(profile__role='curator', profile__genre=campaign.target_genre)
     return curators
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('submission', 'Submission'),
+        ('comment', 'Comment'),
+        ('follow', 'Follow'),
+        # Add more notification types as needed
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    link = models.URLField(max_length=200, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.notification_type} - {self.message}"
+
+    def mark_as_read(self):
+        self.is_read = True
+        self.save()

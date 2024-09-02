@@ -4,13 +4,15 @@ from django.urls import path, include
 
 urlpatterns = [
     path('', views.home, name='home'),  # Example view
-    path('api/docs/', views.api_docs, name='api_docs'),
     path('select-role/', views.select_role, name='select_role'),
     path('create-artist-profile/', views.create_artist_profile, name='create_artist_profile'),
     path('create-curator-label-profile/', views.create_curator_label_profile, name='create_curator_label_profile'),
     path('create-fan-profile/', views.create_fan_profile, name='create_fan_profile'),
     path('account/settings/', views.account_settings, name='account_settings'),
     path('profile/<slug:slug>/', views.profile_detail, name='profile_detail'),
+    path('profile/<slug:slug>/follow/', views.follow_unfollow_profile, name='follow_unfollow_profile'),
+    path('profile/<slug:slug>/followers/', views.profile_followers, name='profile_followers'),
+    path('profile/<slug:slug>/following/', views.profile_following, name='profile_following'),
     path('dashboard/artist/', views.artist_dashboard, name='artist_dashboard'),
     path('dashboard/curator/', views.curator_dashboard, name='curator_dashboard'),
     path('submit-track/<int:track_id>/', views.submit_track, name='submit_track'),
@@ -41,4 +43,7 @@ urlpatterns = [
     path('webhook/', views.stripe_webhook, name='stripe_webhook'),
     path('payment-complete/', views.payment_complete, name='payment_complete'),
     path('confirm-payment/', views.confirm_payment, name='confirm_payment'),
+    path('notifications/mark-as-read/<int:notification_id>/', views.mark_notification_as_read, name='mark_notification_as_read'),
+    path('notifications/', views.all_notifications, name='all_notifications'),
+    path('notifications/fetch/', views.fetch_notifications, name='fetch_notifications'),
 ]

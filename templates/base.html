@@ -21,6 +21,29 @@
                 <input type="text" name="q" id="search-input" placeholder="Search..." class="search-input">
             </form>
             <div id="search-results" class="search-results"></div>
+            {% if user.is_authenticated %}
+                <a class="nav-link dropdown-toggle" href="" id="notificationsDropdown" role="button">
+                    <i class="fas fa-bell"></i>
+                    {% if unread_notifications_count > 0 %}
+                        <span class="badge badge-danger">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+                <div class="dropdown-menu dropdown-menu-right" id="notificationsMenu" aria-labelledby="notificationsDropdown">
+                    <div class="dropdown-header">
+                        Notifications
+                    </div>
+                    <div class="dropdown-body">
+                        {% for notification in recent_notifications %}
+                            <a class="dropdown-item {% if not notification.is_read %}font-weight-bold{% endif %}" href="{{ notification.link }}" data-id="{{ notification.id }}" onclick="markAsRead(this)">
+                                {{ notification.message }}<br><small>{{ notification.created_at|timesince }} ago</small>
+                            </a>
+                        {% endfor %}
+                    </div>                    
+                    <div class="dropdown-footer text-center">
+                        <a href="{% url 'all_notifications' %}">View all notifications</a>
+                    </div>
+                </div>
+            {% endif %}
             <button class="navbar-toggle" id="navbar-toggle">
                 <i class="fas fa-th"></i> <!-- 3x3 grid icon -->
             </button>
@@ -144,12 +167,130 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            function fetchNotifications() {
+                fetch('/notifications/fetch/', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const notificationsMenu = document.querySelector('#notificationsMenu .dropdown-body');
+                    let badge = document.querySelector('.nav-link .badge');
+        
+                    // Clear the current notifications
+                    notificationsMenu.innerHTML = '';
+        
+                    // Populate the dropdown with new notifications
+                    data.notifications.forEach(notification => {
+                        const notificationItem = `
+                            <a class="dropdown-item ${!notification.is_read ? 'font-weight-bold' : ''}" href="${notification.link}" data-id="${notification.id}" onclick="markAsRead(this)">
+                                ${notification.message}<br><small>${notification.timesince} ago</small>
+                            </a>
+                        `;
+                        notificationsMenu.innerHTML += notificationItem;
+                    });
+        
+                    // Update unread notifications count badge
+                    if (data.unread_count > 0) {
+                        if (!badge) {
+                            // Create the badge if it doesn't exist
+                            badge = document.createElement('span');
+                            badge.className = 'badge badge-danger';
+                            document.querySelector('.nav-link.dropdown-toggle').appendChild(badge);
+                        }
+                        badge.textContent = data.unread_count;
+                    } else if (badge) {
+                        // Remove the badge if there are no unread notifications
+                        badge.remove();
+                    }
+                })
+                .catch(error => console.error('Error fetching notifications:', error));
+            }
+        
+            // Polling interval (e.g., every 60 seconds)
+            setInterval(fetchNotifications, 120000);
+        
+            // Initial fetch on page load
+            fetchNotifications();
+        });
+
+        // Define the function in the global scope
+        function markAsRead(element) {
+            const notificationId = element.getAttribute('data-id');
+
+            fetch(`/notifications/mark-as-read/${notificationId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: notificationId })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Optionally remove the bold style
+                    element.classList.remove('font-weight-bold');
+
+                    // Update the unread notifications count
+                    const badge = document.querySelector('.nav-link .badge');
+                    if (badge) {
+                        let currentCount = parseInt(badge.textContent, 10);
+                        if (currentCount > 0) {
+                            currentCount--;
+                            if (currentCount === 0) {
+                                badge.remove(); // Remove badge if no unread notifications
+                            } else {
+                                badge.textContent = currentCount;
+                            }
+                        }
+                    }
+                } else if (data.message === 'Notification already read') {
+                    console.log('Notification was already marked as read.');
+                } else {
+                    console.error('Failed to mark notification as read');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Function to get the CSRF token from the cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
             // Toggle Navbar Menu
             const navbarToggle = document.getElementById('navbar-toggle');
             const navbarMenu = document.getElementById('navbar-menu');
         
-            navbarToggle.addEventListener('click', () => {
+            navbarToggle.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default anchor behavior
                 navbarMenu.classList.toggle('show-menu');
+            });
+        
+            // Close the navbar menu if clicked outside
+            document.addEventListener('click', function(event) {
+                if (!navbarToggle.contains(event.target) && !navbarMenu.contains(event.target)) {
+                    navbarMenu.classList.remove('show-menu');
+                }
             });
         
             // Close the navbar menu when a link is clicked
@@ -159,7 +300,23 @@
                     navbarMenu.classList.remove('show-menu');
                 });
             });
-        
+
+            // Notification dropdown toggle logic
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            const notificationsMenu = document.getElementById('notificationsMenu');
+
+            notificationsDropdown.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default anchor behavior
+                notificationsMenu.classList.toggle('show');
+            });
+
+            // Close the dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                if (!notificationsDropdown.contains(event.target) && !notificationsMenu.contains(event.target)) {
+                    notificationsMenu.classList.remove('show');
+                }
+            });   
+            
             // Check if there's a saved theme preference
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.body.classList.toggle('dark-theme', savedTheme === 'dark');
@@ -182,6 +339,7 @@
             });
         });
     </script>
+
     <script src="{% static 'js/player-controls.js' %}"></script>
 </body>
 </html>
@@ -488,6 +646,8 @@
     .explore-link i {
         margin-right: 5px;
     }
+
+    
     
     /* Mobile Styles */
     @media (max-width: 768px) {
@@ -515,6 +675,132 @@
             order: 4;
             margin-left: auto;
         }
+    }
+    
+</style>
+<style>
+    /* Notification Bell and Badge */
+    .nav-link.dropdown-toggle {
+        position: relative;
+        color: #333;
+        padding: 10px;
+    }
+    
+    .nav-link.dropdown-toggle .fas.fa-bell {
+        font-size: 1.5rem;
+        color: #333;
+    }
+    
+    .nav-link.dropdown-toggle .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 50%;
+        background-color: #dc3545;
+        color: #fff;
+    }
+    
+    /* Modern Dropdown Menu */
+    #notificationsMenu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background-color: #fff;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        overflow: hidden;
+        z-index: 1000;
+        min-width: 300px;
+        max-width: 350px;
+        right: 20px;
+    }
+    
+    #notificationsMenu.show {
+        display: block;
+    }
+    
+    #notificationsMenu .dropdown-header {
+        padding: 10px 15px;
+        font-weight: bold;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    #notificationsMenu .dropdown-body {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    #notificationsMenu .dropdown-item {
+        padding: 10px 15px;
+        font-size: 0.875rem;
+        color: #333;
+        white-space: normal;
+        transition: background-color 0.3s ease;
+        display: block;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    #notificationsMenu .dropdown-item:last-child {
+        border-bottom: none;
+    }
+    
+    #notificationsMenu .dropdown-item:hover {
+        background-color: #f1f1f1;
+    }
+    
+    #notificationsMenu .font-weight-bold {
+        font-weight: 600;
+    }
+    
+    #notificationsMenu .dropdown-footer {
+        padding: 10px 15px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    #notificationsMenu .dropdown-footer a {
+        color: #333;
+        text-decoration: none;
+        font-size: 0.875rem;
+        display: inline-block;
+        transition: color 0.3s ease;
+    }
+    
+    #notificationsMenu .dropdown-footer a:hover {
+        color: #28a745;
+    }
+    
+    /* Dark Theme Adjustments */
+    body.dark-theme #notificationsMenu {
+        background-color: #333;
+        color: #fff;
+    }
+    
+    body.dark-theme #notificationsMenu .dropdown-header,
+    body.dark-theme #notificationsMenu .dropdown-footer {
+        background-color: #444;
+        border-color: #555;
+    }
+    
+    body.dark-theme #notificationsMenu .dropdown-item {
+        color: #ccc;
+        border-bottom-color: #555;
+    }
+    
+    body.dark-theme #notificationsMenu .dropdown-item:hover {
+        background-color: #555;
+    }
+    
+    body.dark-theme #notificationsMenu .dropdown-footer a {
+        color: #4da3ff;
+    }
+    
+    body.dark-theme #notificationsMenu .dropdown-footer a:hover {
+        color: #82c7ff;
     }
     
 </style>
