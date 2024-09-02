@@ -249,7 +249,7 @@ function setupModal() {
 
     // Event listener for "Followers" link
     const followersLink = document.getElementById('followers-link');
-    if (followersLink) {
+    if (followersLink && !followersLink.dataset.listenerAdded) {
         followersLink.addEventListener('click', function (event) {
             event.preventDefault();
             const slug = getCurrentProfileSlug();
@@ -257,11 +257,12 @@ function setupModal() {
                 openModal('Followers', `/profile/${slug}/followers/`);
             }
         });
+        followersLink.dataset.listenerAdded = true;
     }
 
     // Event listener for "Following" link
     const followingLink = document.getElementById('following-link');
-    if (followingLink) {
+    if (followingLink && !followingLink.dataset.listenerAdded) {
         followingLink.addEventListener('click', function (event) {
             event.preventDefault();
             const slug = getCurrentProfileSlug();
@@ -269,8 +270,14 @@ function setupModal() {
                 openModal('Following', `/profile/${slug}/following/`);
             }
         });
+        followingLink.dataset.listenerAdded = true;
     }
 }
+
+// Initialize the modal setup when the DOM content is fully loaded
+document.addEventListener('DOMContentLoaded', function () {
+    setupModal();
+});
 
 // Observe the document for changes and reinitialize the modal setup if necessary
 const observer = new MutationObserver(() => {
